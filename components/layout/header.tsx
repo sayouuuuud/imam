@@ -195,7 +195,7 @@ export function Header() {
     <>
       <header
         className={cn(
-          "sticky top-0 z-50 w-full bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-[#1e293b]/80 transition-all duration-200 border-b border-border/50",
+          "sticky top-0 z-50 w-full bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80 transition-all duration-200 border-b border-border/50",
           scrolled ? "shadow-md border-b border-border" : "shadow-sm",
         )}
       >

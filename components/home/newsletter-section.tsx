@@ -47,7 +47,7 @@ export function NewsletterSection() {
       setStatus("error")
     }
   } 
-  return ( <section className="py-16 bg-primary dark:bg-[#024a37] relative overflow-hidden">
+  return ( <section className="py-16 bg-primary relative overflow-hidden">
  {/* Background Pattern */} <div className="absolute inset-0 opacity-10 pointer-events-none">
 <svg width="100%" height="100%">
  <pattern id="pattern-circles" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -58,7 +58,7 @@ export function NewsletterSection() {
 </div>
 
  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-<div className="inline-flex items-center gap-2 bg-primary/20 dark:bg-primary/30 px-3 py-1 rounded-full text-xs font-medium mb-4 backdrop-blur-sm text-primary-foreground">
+<div className="inline-flex items-center gap-2 bg-primary-foreground/20 px-3 py-1 rounded-full text-xs font-medium mb-4 backdrop-blur-sm text-primary-foreground">
   <span className="material-icons-outlined text-sm">
     group</span>
   <span>

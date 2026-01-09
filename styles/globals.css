@@ -4,108 +4,287 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* ============================================
+     LIGHT MODE - Complete Color System
+     ============================================ */
+  
+  /* Background Colors - Light Mode */
+  --background: oklch(1 0 0); /* Pure white - main background */
+  --background-secondary: oklch(0.99 0 0); /* Very light gray - alternative sections */
+  --surface: oklch(0.985 0 0); /* Off-white - elevated surfaces */
+  --surface-hover: oklch(0.97 0 0); /* Light hover state */
+  
+  /* Foreground (Text) Colors - Light Mode */
+  --foreground: oklch(0.145 0 0); /* Near black - primary text */
+  --foreground-secondary: oklch(0.35 0 0); /* Dark gray - secondary text */
+  --foreground-muted: oklch(0.556 0 0); /* Medium gray - muted text */
+  
+  /* Card Colors - Light Mode */
+  --card: oklch(1 0 0); /* White - card background */
+  --card-foreground: oklch(0.145 0 0); /* Near black - card text */
+  --card-hover: oklch(0.985 0 0); /* Very light gray - card hover */
+  
+  /* Popover Colors - Light Mode */
+  --popover: oklch(1 0 0); /* White */
+  --popover-foreground: oklch(0.145 0 0); /* Near black */
+  
+  /* Primary Brand Colors - Light Mode */
+  --primary: oklch(0.205 0 0); /* Near black - primary actions */
+  --primary-foreground: oklch(0.985 0 0); /* Off-white text on primary */
+  --primary-hover: oklch(0.305 0 0); /* Slightly lighter on hover */
+  
+  /* Secondary Colors - Light Mode */
+  --secondary: oklch(0.97 0 0); /* Light gray background */
+  --secondary-foreground: oklch(0.205 0 0); /* Near black text */
+  --secondary-hover: oklch(0.95 0 0); /* Slightly darker on hover */
+  
+  /* Muted Colors - Light Mode */
+  --muted: oklch(0.97 0 0); /* Light gray - subtle backgrounds */
+  --muted-foreground: oklch(0.556 0 0); /* Medium gray text */
+  --muted-hover: oklch(0.95 0 0); /* Slightly darker on hover */
+  
+  /* Accent Colors - Light Mode */
+  --accent: oklch(0.97 0 0); /* Light gray accent */
+  --accent-foreground: oklch(0.205 0 0); /* Dark text on accent */
+  --accent-hover: oklch(0.95 0 0); /* Accent hover state */
+  
+  /* Status Colors - Light Mode */
+  --success: oklch(0.6 0.15 145); /* Green for success */
+  --success-foreground: oklch(0.99 0 0); /* White text */
+  --success-bg: oklch(0.95 0.08 145); /* Light green background */
+  --success-border: oklch(0.75 0.12 145); /* Green border */
+  
+  --warning: oklch(0.75 0.15 75); /* Yellow/orange for warnings */
+  --warning-foreground: oklch(0.15 0 0); /* Dark text */
+  --warning-bg: oklch(0.95 0.08 75); /* Light yellow background */
+  --warning-border: oklch(0.8 0.12 75); /* Yellow border */
+  
+  --error: oklch(0.577 0.245 27.325); /* Red for errors */
+  --error-foreground: oklch(0.99 0 0); /* White text */
+  --error-bg: oklch(0.95 0.08 27); /* Light red background */
+  --error-border: oklch(0.65 0.2 27); /* Red border */
+  
+  --info: oklch(0.6 0.15 240); /* Blue for info */
+  --info-foreground: oklch(0.99 0 0); /* White text */
+  --info-bg: oklch(0.95 0.08 240); /* Light blue background */
+  --info-border: oklch(0.7 0.12 240); /* Blue border */
+  
+  /* Destructive (same as error but for consistency) */
+  --destructive: oklch(0.577 0.245 27.325); /* Red */
+  --destructive-foreground: oklch(0.99 0 0); /* White text */
+  --destructive-hover: oklch(0.52 0.24 27); /* Darker red on hover */
+  
+  /* Border & Input Colors - Light Mode */
+  --border: oklch(0.922 0 0); /* Light gray borders */
+  --border-hover: oklch(0.85 0 0); /* Slightly darker on hover */
+  --input: oklch(0.922 0 0); /* Input border color */
+  --input-background: oklch(1 0 0); /* White input background */
+  
+  /* Focus Ring - Light Mode */
+  --ring: oklch(0.708 0 0); /* Gray for focus outlines */
+  
+  /* Shadows - Light Mode */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  
+  /* Chart Colors - Light Mode */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+  
+  /* Radius */
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Sidebar Colors - Light Mode */
+  --sidebar: oklch(0.985 0 0); /* Off-white */
+  --sidebar-foreground: oklch(0.145 0 0); /* Near black */
+  --sidebar-primary: oklch(0.205 0 0); /* Near black */
+  --sidebar-primary-foreground: oklch(0.985 0 0); /* Off-white */
+  --sidebar-accent: oklch(0.97 0 0); /* Light gray */
+  --sidebar-accent-foreground: oklch(0.205 0 0); /* Near black */
+  --sidebar-border: oklch(0.922 0 0); /* Light gray */
+  --sidebar-ring: oklch(0.708 0 0); /* Gray */
 }
 
 .dark {
-  /* Dark Mode - Using #0f172a (slate-900) as base instead of pure black */
-  --background: oklch(0.15 0.02 235); /* #0f172a - slate-900 */
-  --foreground: oklch(0.95 0.005 240); /* Light gray-blue for better readability */
+  /* ============================================
+     DARK MODE - Complete Color System
+     Using #0f172a (slate-900) as base
+     ============================================ */
+  
+  /* Background Colors - Dark Mode */
+  --background: oklch(0.15 0.02 235); /* #0f172a - slate-900 main background */
+  --background-secondary: oklch(0.17 0.02 235); /* Slightly lighter - alternative sections */
+  --surface: oklch(0.18 0.02 235); /* Elevated surfaces (cards, modals) */
+  --surface-hover: oklch(0.22 0.02 235); /* Lighter hover state */
+  
+  /* Foreground (Text) Colors - Dark Mode */
+  --foreground: oklch(0.95 0.005 240); /* Light gray-blue - primary text */
+  --foreground-secondary: oklch(0.75 0.005 240); /* Medium gray - secondary text */
+  --foreground-muted: oklch(0.6 0.005 240); /* Darker gray - muted text */
+  
+  /* Card Colors - Dark Mode */
   --card: oklch(0.18 0.02 235); /* Slightly lighter than background */
-  --card-foreground: oklch(0.95 0.005 240);
-  --popover: oklch(0.18 0.02 235);
-  --popover-foreground: oklch(0.95 0.005 240);
-  --primary: oklch(0.65 0.15 240); /* Bright blue for primary actions */
-  --primary-foreground: oklch(0.15 0.02 235);
+  --card-foreground: oklch(0.95 0.005 240); /* Light text */
+  --card-hover: oklch(0.22 0.02 235); /* Lighter on hover */
+  
+  /* Popover Colors - Dark Mode */
+  --popover: oklch(0.18 0.02 235); /* Same as cards */
+  --popover-foreground: oklch(0.95 0.005 240); /* Light text */
+  
+  /* Primary Brand Colors - Dark Mode */
+  --primary: oklch(0.65 0.15 240); /* Bright blue - primary actions */
+  --primary-foreground: oklch(0.15 0.02 235); /* Dark text on primary */
+  --primary-hover: oklch(0.7 0.16 240); /* Brighter on hover */
+  
+  /* Secondary Colors - Dark Mode */
   --secondary: oklch(0.25 0.02 235); /* Medium slate */
-  --secondary-foreground: oklch(0.95 0.005 240);
-  --muted: oklch(0.22 0.02 235); /* Subtle muted areas */
-  --muted-foreground: oklch(0.7 0.005 240); /* Better contrast */
-  --accent: oklch(0.25 0.02 235);
-  --accent-foreground: oklch(0.95 0.005 240);
-  --destructive: oklch(0.55 0.2 25); /* Red with good contrast */
-  --destructive-foreground: oklch(0.95 0.005 240);
-  --border: oklch(0.28 0.02 235); /* Subtle borders */
+  --secondary-foreground: oklch(0.95 0.005 240); /* Light text */
+  --secondary-hover: oklch(0.3 0.02 235); /* Lighter on hover */
+  
+  /* Muted Colors - Dark Mode */
+  --muted: oklch(0.22 0.02 235); /* Subtle slate backgrounds */
+  --muted-foreground: oklch(0.7 0.005 240); /* Medium text with good contrast */
+  --muted-hover: oklch(0.26 0.02 235); /* Slightly lighter on hover */
+  
+  /* Accent Colors - Dark Mode */
+  --accent: oklch(0.25 0.02 235); /* Accent backgrounds */
+  --accent-foreground: oklch(0.95 0.005 240); /* Light text */
+  --accent-hover: oklch(0.3 0.02 235); /* Lighter on hover */
+  
+  /* Status Colors - Dark Mode */
+  --success: oklch(0.65 0.15 145); /* Bright green for success */
+  --success-foreground: oklch(0.15 0.02 235); /* Dark text */
+  --success-bg: oklch(0.25 0.08 145); /* Dark green background */
+  --success-border: oklch(0.4 0.12 145); /* Medium green border */
+  
+  --warning: oklch(0.75 0.18 85); /* Bright yellow for warnings */
+  --warning-foreground: oklch(0.15 0.02 235); /* Dark text */
+  --warning-bg: oklch(0.3 0.1 85); /* Dark yellow background */
+  --warning-border: oklch(0.5 0.14 85); /* Medium yellow border */
+  
+  --error: oklch(0.65 0.22 27); /* Bright red for errors */
+  --error-foreground: oklch(0.15 0.02 235); /* Dark text */
+  --error-bg: oklch(0.25 0.08 27); /* Dark red background */
+  --error-border: oklch(0.45 0.16 27); /* Medium red border */
+  
+  --info: oklch(0.65 0.15 240); /* Bright blue for info */
+  --info-foreground: oklch(0.15 0.02 235); /* Dark text */
+  --info-bg: oklch(0.25 0.08 240); /* Dark blue background */
+  --info-border: oklch(0.45 0.12 240); /* Medium blue border */
+  
+  /* Destructive (same as error but for consistency) */
+  --destructive: oklch(0.65 0.22 27); /* Bright red */
+  --destructive-foreground: oklch(0.15 0.02 235); /* Dark text */
+  --destructive-hover: oklch(0.7 0.24 27); /* Brighter red on hover */
+  
+  /* Border & Input Colors - Dark Mode */
+  --border: oklch(0.28 0.02 235); /* Subtle slate borders */
+  --border-hover: oklch(0.35 0.02 235); /* Lighter on hover */
   --input: oklch(0.2 0.02 235); /* Dark input backgrounds */
-  --ring: oklch(0.65 0.15 240);
-  --chart-1: oklch(0.65 0.15 240);
-  --chart-2: oklch(0.55 0.12 200);
-  --chart-3: oklch(0.45 0.1 160);
-  --chart-4: oklch(0.35 0.08 120);
-  --chart-5: oklch(0.25 0.06 80);
+  --input-background: oklch(0.18 0.02 235); /* Slightly lighter input bg */
+  
+  /* Focus Ring - Dark Mode */
+  --ring: oklch(0.65 0.15 240); /* Bright blue for focus */
+  
+  /* Shadows - Dark Mode (more subtle for dark backgrounds) */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.6);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.8);
+  
+  /* Chart Colors - Dark Mode */
+  --chart-1: oklch(0.65 0.15 240); /* Blue */
+  --chart-2: oklch(0.6 0.14 200); /* Cyan */
+  --chart-3: oklch(0.55 0.12 160); /* Teal */
+  --chart-4: oklch(0.65 0.15 145); /* Green */
+  --chart-5: oklch(0.7 0.16 85); /* Yellow */
+  
+  /* Sidebar Colors - Dark Mode */
   --sidebar: oklch(0.17 0.02 235); /* Slightly lighter than main background */
-  --sidebar-foreground: oklch(0.95 0.005 240);
-  --sidebar-primary: oklch(0.65 0.15 240);
-  --sidebar-primary-foreground: oklch(0.15 0.02 235);
-  --sidebar-accent: oklch(0.25 0.02 235);
-  --sidebar-accent-foreground: oklch(0.95 0.005 240);
-  --sidebar-border: oklch(0.28 0.02 235);
-  --sidebar-ring: oklch(0.65 0.15 240);
+  --sidebar-foreground: oklch(0.95 0.005 240); /* Light text */
+  --sidebar-primary: oklch(0.65 0.15 240); /* Bright blue */
+  --sidebar-primary-foreground: oklch(0.15 0.02 235); /* Dark text */
+  --sidebar-accent: oklch(0.25 0.02 235); /* Medium slate */
+  --sidebar-accent-foreground: oklch(0.95 0.005 240); /* Light text */
+  --sidebar-border: oklch(0.28 0.02 235); /* Subtle borders */
+  --sidebar-ring: oklch(0.65 0.15 240); /* Bright blue */
 }
 
 @theme inline {
   --font-sans: 'Geist', 'Geist Fallback';
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  
+  /* Color Mappings */
   --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-card-hover: var(--card-hover);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-muted-hover: var(--muted-hover);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-hover: var(--accent-hover);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-border: var(--warning-border);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-error-bg: var(--error-bg);
+  --color-error-border: var(--error-border);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-bg: var(--info-bg);
+  --color-info-border: var(--info-border);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
   --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
   --color-input: var(--input);
+  --color-input-background: var(--input-background);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  
+  /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Sidebar */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);

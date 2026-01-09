@@ -92,7 +92,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
   return (
     <header className="relative overflow-hidden py-16 lg:py-24 bg-background">
       {heroData.notice_active && heroData.notice_text && (
-        <div className="bg-secondary/10 dark:bg-secondary/20 border-b border-secondary/20 absolute top-0 left-0 right-0 z-20">
+        <div className="bg-secondary/10 border-b border-secondary/20 absolute top-0 left 0 right-0 z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
             <div className="flex items-center justify-center gap-3 text-center">
               <span className="text-secondary text-lg">📢</span>
@@ -127,7 +127,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
             {/* Content */}
             <div className="flex-1 text-center lg:text-right space-y-8 lg:space-y-10">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-surface dark:bg-card px-4 py-2 rounded-full border border-border shadow-sm">
+              <div className="inline-flex items-center gap-2 bg-surface px-4 py-2 rounded-full border border-border shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
                 <span className="text-sm text-secondary font-medium">حديث اليوم</span>
               </div>
@@ -140,7 +140,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
               />
 
               {/* Description - from database */}
-              <p className="text-lg lg:text-xl text-text-muted dark:text-text-subtext leading-relaxed max-w-3xl mx-auto lg:mx-0">
+              <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto lg:mx-0">
                 {heroData.hadith_explanation}
               </p>
 
@@ -154,7 +154,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                 <Link
                   href={heroData.hadith_button_link}
-                  className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all text-lg font-medium group"
+                  className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all text-lg font-medium group"
                 >
                   <span className="material-icons-outlined text-xl group-hover:scale-110 transition-transform">
                     menu_book
@@ -163,7 +163,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
                 </Link>
                 <Link
                   href="/dars"
-                  className="flex items-center gap-2 bg-surface dark:bg-card border border-border text-foreground px-8 py-3.5 rounded-xl hover:bg-muted dark:hover:bg-accent transition-all shadow-sm hover:shadow-md text-lg font-medium group"
+                  className="flex items-center gap-2 bg-surface border border-border text-foreground px-8 py-3.5 rounded-xl hover:bg-muted-hover transition-all shadow-sm hover:shadow-md text-lg font-medium group"
                 >
                   <span className="material-icons-outlined text-xl group-hover:scale-110 transition-transform">
                     play_circle
@@ -176,7 +176,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
             {/* Featured Book - Now properly shows book image from database */}
             <div className="flex-shrink-0 relative group">
               <div className="absolute inset-0 bg-primary opacity-20 blur-3xl rounded-full transform scale-90 group-hover:scale-100 transition duration-700"></div>
-              <div className="relative bg-surface dark:bg-card p-4 rounded-2xl shadow-xl border border-border">
+              <div className="relative bg-surface p-4 rounded-2xl shadow-xl border border-border">
                 {bookImageUrl ? (
                   <div className="relative w-[280px] sm:w-[320px] h-[400px] sm:h-[460px] rounded-xl overflow-hidden">
                     <img
@@ -201,7 +201,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
                     <h2 className="text-primary-foreground text-4xl sm:text-5xl font-serif font-bold mb-1">فقه</h2>
                     <h2 className="text-primary-foreground text-4xl sm:text-5xl font-serif font-bold mb-6">السنة</h2>
                     <div className="w-16 h-0.5 bg-secondary mb-6"></div>
-                    <p className="text-gray-300/80 text-sm">دراسة منهجية</p>
+                    <p className="text-primary-foreground/80 text-sm">دراسة منهجية</p>
 
                     <div className="absolute left-0 top-4 bottom-4 w-4 bg-gradient-to-r from-black/20 to-transparent rounded-l-lg"></div>
                   </div>
@@ -210,7 +210,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
                 {/* View Book Link */}
                 <Link
                   href={featuredBook ? `/books/${featuredBook.id}` : heroData.button_link}
-                  className="mt-4 flex items-center justify-center gap-2 text-primary dark:text-secondary font-medium cursor-pointer hover:underline py-2 group/link"
+                  className="mt-4 flex items-center justify-center gap-2 text-primary font-medium cursor-pointer hover:underline py-2 group/link"
                 >
                   <span className="material-icons-outlined text-sm group-hover/link:scale-110 transition-transform">
                     visibility

@@ -5,48 +5,48 @@ const sections = [
     title: "الدروس العلمية",
     description: "دروس مسجلة في مختلف فروع العلم الشرعي من الشيخ السيد مراد.",
     icon: "school",
-    bgColor: "bg-gray-100 dark:bg-gray-900",
-    iconColor: "text-gray-800 dark:text-gray-200",
+    bgColor: "bg-muted",
+    iconColor: "text-foreground",
     href: "/dars",
   },
   {
     title: "الكتبة المقروءة",
     description: "مؤلفات الشيخ وكتب مختارة للتحميل بصيغة PDF.",
     icon: "library_books",
-    bgColor: "bg-gray-100 dark:bg-gray-900",
-    iconColor: "text-gray-800 dark:text-gray-200",
+    bgColor: "bg-muted",
+    iconColor: "text-foreground",
     href: "/books",
   },
   {
     title: "المرئيات",
     description: "مقاطع مرئية قصيرة ومحاضرات مصورة بجودة عالية.",
     icon: "play_circle_filled",
-    bgColor: "bg-red-50 dark:bg-red-950",
-    iconColor: "text-red-700 dark:text-red-300",
+    bgColor: "bg-error-bg",
+    iconColor: "text-error-border",
     href: "/videos",
   },
   {
     title: "المقالات والبحوث",
     description: "كتابات دورية تناقش القضايا المعاصرة برؤية شرعية.",
     icon: "article",
-    bgColor: "bg-blue-50",
-    iconColor: "text-blue-700",
+    bgColor: "bg-info-bg",
+    iconColor: "text-info-border",
     href: "/articles",
   },
   {
     title: "المكتبة المقروءة",
     description: "مؤلفات الشيخ وكتب مختارة للتحميل بصيغة PDF.",
     icon: "library_books",
-    bgColor: "bg-gray-100",
-    iconColor: "text-gray-800",
+    bgColor: "bg-muted",
+    iconColor: "text-foreground",
     href: "/books",
   },
   {
     title: "المرئيات",
     description: "مقاطع مرئية قصيرة ومحاضرات مصورة بجودة عالية.",
     icon: "play_circle_filled",
-    bgColor: "bg-red-50",
-    iconColor: "text-red-700",
+    bgColor: "bg-error-bg",
+    iconColor: "text-error-border",
     href: "/videos",
   },
 ]
@@ -62,24 +62,24 @@ export function ExploreSections() {
             <span className="material-icons-outlined text-3xl">menu_book</span>
 </div>
           <h2 className="text-4xl font-bold mb-4 font-serif">استكشف العلم أكثر</h2>
-<p className="text-text-muted max-w-xl mx-auto">تصفح أقسام الموقع المتنوعة للوصول إلى المحتوى.</p>
+<p className="text-muted-foreground max-w-xl mx-auto">تصفح أقسام الموقع المتنوعة للوصول إلى المحتوى.</p>
 </div>
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 <Link
             href="/khutba"
-            className="bg-primary rounded-2xl p-8 text-white relative overflow-hidden group row-span-2 flex flex-col justify-end min-h-[300px] hover:bg-primary-hover transition-colors"
+            className="bg-primary rounded-2xl p-8 text-primary-foreground relative overflow-hidden group row-span-2 flex flex-col justify-end min-h-[300px] hover:bg-primary-hover transition-colors"
           >
             <div className="absolute top-0 left-0 p-40 bg-primary opacity-5 dark:opacity-10 rounded-full blur-2xl transform -translate-x-1/2 -translate-y-1/2">
 </div>
 <div className="relative z-10">
-<div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4">
+<div className="w-12 h-12 bg-primary-foreground/20 rounded-full flex items-center justify-center mb-4">
                 <span className="material-icons-outlined text-2xl">record_voice_over</span>
 </div>
               <h3 className="text-2xl font-bold mb-2 font-serif">الخطب المنبرية</h3>
-<p className="text-white/80 mb-4">خطب الجمعة والأعياد والمناسبات الدينية مع إمكانية الاستماع والتحميل.</p>
-<span className="inline-flex items-center gap-2 text-sm font-bold bg-white/20 px-4 py-2 rounded-lg group-hover:bg-white/30 transition-colors">
+<p className="text-primary-foreground/80 mb-4">خطب الجمعة والأعياد والمناسبات الدينية مع إمكانية الاستماع والتحميل.</p>
+<span className="inline-flex items-center gap-2 text-sm font-bold bg-primary-foreground/20 px-4 py-2 rounded-lg group-hover:bg-primary-foreground/30 transition-colors">
                 استمع الآن
                 <span className="material-icons-outlined text-sm rtl-flip">arrow_forward</span>
 </span>
@@ -90,7 +90,7 @@ export function ExploreSections() {
             <Link
               key={index}
 href={section.href}
-className="bg-white dark:bg-[#1e293b] border-2 border-border dark:border-[#334155] rounded-2xl p-6 hover:shadow-xl dark:hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5)] transition-all group shadow-lg dark:shadow-xl"
+className="bg-card border-2 border-border rounded-2xl p-6 hover:shadow-xl transition-all group shadow-lg"
             >
 <div className={`w-12 h-12 ${section.bgColor} rounded-xl flex items-center justify-center mb-4`}>
                 <span className={`material-icons-outlined text-2xl ${section.iconColor}`}>{section.icon}</span>
@@ -98,7 +98,7 @@ className="bg-white dark:bg-[#1e293b] border-2 border-border dark:border-[#33415
               <h3 className="text-xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors font-serif">
                 {section.title}
               </h3>
-<p className="text-text-muted text-sm">{section.description}</p>
+<p className="text-muted-foreground text-sm">{section.description}</p>
 </Link>
           ))}
         </div>
