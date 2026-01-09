@@ -27,7 +27,7 @@ export function LatestContent({ content }: LatestContentProps) {
     <div>
 <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
-<span className="bg-blue-100 text-primary p-2.5 rounded-xl shadow-sm">
+<span className="bg-info-bg text-info-border p-2.5 rounded-xl shadow-sm">
             <FileText className="h-5 w-5" />
 </span>
 <h3 className="text-2xl font-bold font-serif text-foreground">أحدث المحتويات</h3>
@@ -87,13 +87,13 @@ const getItemTypeLabel = () => {
 const getItemTypeColor = () => {
               switch (item.content_type) {
                 case "article":
-                  return "bg-blue-100 text-blue-600"
+                  return "bg-info-bg text-info-border"
                 case "sermon":
-                  return "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
+                  return "bg-success-bg text-success-border"
                 case "lesson":
-                  return "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300"
+                  return "bg-accent text-accent-foreground"
                 default:
-                  return "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-300"
+                  return "bg-muted text-muted-foreground"
               }
             }
 
@@ -104,7 +104,7 @@ const description = item.excerpt || item.description
               <Link
                 key={`${item.content_type}-${item.id}`}
 href={getItemUrl()}
-className="block bg-white dark:bg-[#1e293b] hover:bg-gray-50 dark:hover:bg-[#1e293b]/90 border-2 border-border dark:border-[#334155] rounded-xl p-4 transition-all hover:shadow-lg dark:hover:shadow-xl group"
+className="block bg-card hover:bg-card-hover border-2 border-border rounded-xl p-4 transition-all hover:shadow-lg group"
               >
 <div className="flex gap-4">
                   <div

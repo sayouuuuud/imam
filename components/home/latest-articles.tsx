@@ -25,19 +25,19 @@ interface LatestArticlesProps {
 
 export function LatestArticles({ articles }: LatestArticlesProps) {
   return (
-    <section className="py-16 bg-background dark:bg-background">
+    <section className="py-16 bg-background">
 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex justify-between items-end mb-12">
 <div>
-            <span className="text-xs font-bold text-primary dark:text-secondary bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full mb-3 inline-block">
+            <span className="text-xs font-bold text-primary bg-info-bg px-3 py-1 rounded-full mb-3 inline-block">
               المقالات العلمية
             </span>
-<h2 className="text-4xl font-bold font-serif text-foreground dark:text-white">أحدث المقالات</h2>
+<h2 className="text-4xl font-bold font-serif text-foreground">أحدث المقالات</h2>
 </div>
           <Link
             href="/articles"
-            className="hidden sm:flex items-center gap-2 text-text-muted dark:text-text-subtext hover:text-primary dark:hover:text-secondary transition bg-surface dark:bg-card px-4 py-2 rounded-lg text-sm"
+            className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-primary transition bg-surface px-4 py-2 rounded-lg text-sm"
           >
             عرض كل المقالات
             <span className="material-icons-outlined text-sm rtl-flip">arrow_right_alt</span>
@@ -45,13 +45,13 @@ export function LatestArticles({ articles }: LatestArticlesProps) {
         </div>
 
         {articles.length === 0 ? (
-          <p className="text-text-muted dark:text-text-subtext text-center py-12">لا توجد مقالات حالياً</p>
+          <p className="text-muted-foreground text-center py-12">لا توجد مقالات حالياً</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.map((article) => (
               <Link href={`/articles/${article.id}`}
 key = {article.id}>
-<article className="bg-white dark:bg-[#1e293b] rounded-2xl overflow-hidden shadow-xl dark:shadow-2xl hover:shadow-2xl dark:hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5)] transition-all border-2 border-border dark:border-[#334155] group h-full">
+<article className="bg-card rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all border-2 border-border group h-full">
                   {/* Thumbnail */}
                   <div className="aspect-video bg-gradient-to-br from-primary/10 to-secondary/10 relative overflow-hidden">
                     {article.primaryImageUrl ? (
@@ -75,7 +75,7 @@ key = {article.id}>
                   </div>
 <div className="p-4">
                     {/* Title */}
-                    <h3 className="text-xl font-bold mb-3 text-foreground dark:text-white group-hover:text-primary dark:group-hover:text-secondary transition line-clamp-2">
+                    <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-primary transition line-clamp-2">
                       {article.title}
                     </h3>
 
@@ -87,7 +87,7 @@ key = {article.id}>
 
                     {/* Date */}
                     <div className="mt-3 pt-3 border-t border-border">
-<span className="text-xs text-text-muted">
+<span className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(article.created_at), { addSuffix: true, locale: ar })}
                       </span>
 </div>

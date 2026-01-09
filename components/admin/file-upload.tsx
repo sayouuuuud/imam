@@ -155,18 +155,18 @@ const handleManualPathChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   return (
     <div className="space-y-3">
-<Label className="text-sm font-medium text-foreground dark:text-gray-200">{label}</Label>
+<Label className="text-sm font-medium text-foreground">{label}</Label>
 
       {filePath && (
-        <div className="mb-3 p-4 bg-muted dark:bg-background-alt rounded-xl border border-border">
+        <div className="mb-3 p-4 bg-muted rounded-xl border border-border">
 <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-<div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+<div className="p-2 bg-success-bg rounded-lg">
+                <CheckCircle className="h-6 w-6 text-success-border" />
 </div>
 <div>
-<p className="font-medium text-foreground dark:text-white">تم اختيار الملف</p>
-<p className="text-xs text-text-muted">الملف جاهز للاستخدام</p>
+<p className="font-medium text-foreground">تم اختيار الملف</p>
+<p className="text-xs text-muted-foreground">الملف جاهز للاستخدام</p>
 </div>
             </div>
 <Button type="button" variant="destructive" size="sm" onClick={handleRemove}>
@@ -225,7 +225,7 @@ className="hidden"
             <div className="flex flex-col items-center gap-4">
 <Loader2 className="h-10 w-10 animate-spin text-primary" />
               <div className="w-full max-w-xs">
-<div className="flex justify-between text-sm text-text-muted mb-2">
+<div className="flex justify-between text-sm text-muted-foreground mb-2">
                   <span>جاري الرفع...</span>
 <span>{uploadProgress}%</span>
 </div>
@@ -242,8 +242,8 @@ className="hidden"
               {getIcon()}
               <div>
 <p className="text-base font-medium text-foreground">اسحب الملف هنا أو اضغط للاختيار</p>
-<p className="text-sm text-text-muted mt-1">{getAcceptText()}</p>
-<p className="text-xs text-text-muted mt-1">الحد الأقصى: 50 ميجابايت</p>
+<p className="text-sm text-muted-foreground mt-1">{getAcceptText()}</p>
+<p className="text-xs text-muted-foreground mt-1">الحد الأقصى: 50 ميجابايت</p>
 </div>
               <Button type="button" variant="outline" size="default" className="mt-2 bg-transparent">
 <Upload className="h-4 w-4 ml-2" />
@@ -256,7 +256,7 @@ className="hidden"
 
       {/* Error Message */}
       {error && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
+        <div className="flex items-center gap-2 p-3 bg-error-bg text-error-border rounded-lg">
 <X className="h-5 w-5" />
           <span className="text-sm">{error}</span>
 </div>
@@ -264,7 +264,7 @@ className="hidden"
 
       {/* Manual Path Input */}
       <details className="mt-3">
-<summary className="text-xs text-text-muted cursor-pointer hover:text-primary transition-colors">
+<summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors">
           أو أدخل الرابط يدوياً (مثل روابط يوتيوب)
         </summary>
 <div className="mt-2 space-y-2">
@@ -273,10 +273,10 @@ className="hidden"
             value={filePath}
 onChange = {handleManualPathChange}
 placeholder = "رابط ملف (Backblaze/Supabase) أو https://youtube.com/..."
-            className="bg-muted dark:bg-background-alt font-mono text-sm"
+            className="bg-muted font-mono text-sm"
             dir="ltr"
           />
-<p className="text-xs text-text-muted">يمكنك إدخال مسار ملف محلي أو رابط خارجي مباشرة</p>
+<p className="text-xs text-muted-foreground">يمكنك إدخال مسار ملف محلي أو رابط خارجي مباشرة</p>
 </div>
       </details>
 </div>
