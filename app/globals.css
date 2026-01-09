@@ -6,13 +6,13 @@
   --font-sans: var(--font-cairo), "Cairo", sans-serif;
   --font-serif: var(--font-amiri), "Amiri", serif;
 
-  /* Primary Islamic Green - Darker */
+  /* Primary Islamic Green - Light Mode */
   --color-primary: #035d44;
   --color-primary-hover: #047857;
   --color-primary-light: #059669;
   --color-primary-foreground: #ffffff;
 
-  /* Secondary Gold */
+  /* Secondary Gold - Light Mode */
   --color-secondary: #d4af37;
   --color-secondary-hover: #b58842;
   --color-secondary-light: #e5c85c;
@@ -21,36 +21,70 @@
   /* Backgrounds - Light Mode */
   --color-background: #f8fafc;
   --color-background-alt: #f1f5f9;
+  --color-background-tertiary: #e2e8f0;
   --color-surface: #ffffff;
 
   /* Text - Light Mode */
   --color-foreground: #1e293b;
+  --color-foreground-secondary: #475569;
+  --color-foreground-muted: #64748b;
   --color-text-main: #1e293b;
   --color-text-muted: #64748b;
   --color-text-subtext: #64748b;
 
-  /* Card & Borders - Light Mode - Enhanced contrast */
+  /* Card & Borders - Light Mode */
   --color-card: #ffffff;
+  --color-card-hover: #f8fafc;
   --color-card-foreground: #1e293b;
   --color-border: #cbd5e1;
-  --color-border-light: #f1f5f9;
+  --color-border-light: #e2e8f0;
+  --color-border-focus: #035d44;
 
-  /* Add missing color tokens */
+  /* Ring, Input, Accent - Light Mode */
   --color-ring: #035d44;
-  --color-input: #e2e8f0;
+  --color-input: transparent;
+  --color-input-border: #e2e8f0;
+  --color-input-focus: #035d44;
   --color-accent: #f1f5f9;
   --color-accent-foreground: #1e293b;
   --color-muted: #f8fafc;
   --color-muted-foreground: #64748b;
+
+  /* Destructive - Light Mode */
   --color-destructive: #dc2626;
   --color-destructive-foreground: #ffffff;
+
+  /* Popover - Light Mode */
   --color-popover: #ffffff;
   --color-popover-foreground: #1e293b;
 
-  /* Accent Colors */
+  /* Status Colors - Light Mode */
+  --color-success: #059669;
+  --color-success-foreground: #ffffff;
+  --color-success-bg: #d1fae5;
+  --color-warning: #d97706;
+  --color-warning-foreground: #ffffff;
+  --color-warning-bg: #fef3c7;
+  --color-error: #dc2626;
+  --color-error-foreground: #ffffff;
+  --color-error-bg: #fee2e2;
+  --color-info: #2563eb;
+  --color-info-foreground: #ffffff;
+  --color-info-bg: #dbeafe;
+
+  /* Accent Colors - Light Mode */
   --color-accent-light: #f0fdf4;
   --color-islamic-green: #16a085;
   --color-islamic-green-light: #e8f5f0;
+
+  /* Shadow System - Light Mode */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px 0 rgb(0 0 0 / 0.06);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-navbar: 0 1px 3px 0 rgb(0 0 0 / 0.05);
 
   /* Radius */
   --radius: 0.5rem;
@@ -60,7 +94,7 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
 
-  /* Sidebar */
+  /* Sidebar - Light Mode */
   --color-sidebar: #f8fafc;
   --color-sidebar-foreground: #1e293b;
   --color-sidebar-primary: #035d44;
@@ -74,71 +108,94 @@
 /* Dark mode variables - Using #0f172a (slate-900) as base */
 .dark {
   /* Dark Backgrounds - Using #0f172a instead of pure black */
-  --color-background: #0f172a !important;
-  --color-background-alt: #1e293b !important;
-  --color-surface: #1e293b !important;
-  --color-sidebar: #0f172a !important;
+  --color-background: #0f172a;
+  --color-background-alt: #1e293b;
+  --color-background-tertiary: #334155;
+  --color-surface: #1e293b;
 
-  /* Dark Cards - Enhanced contrast for better visibility */
-  --color-card: #1e293b !important;
-  --color-popover: #1e293b !important;
+  /* Primary Brand Colors - Brighter for dark mode visibility */
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
+  --color-primary-light: #34d399;
+  --color-primary-foreground: #ffffff;
+
+  /* Secondary Gold - Brighter for dark mode */
+  --color-secondary: #fbbf24;
+  --color-secondary-hover: #f59e0b;
+  --color-secondary-light: #fcd34d;
+  --color-secondary-foreground: #1f2937;
+
+  /* Dark Cards & Popover */
+  --color-card: #1e293b;
+  --color-card-hover: #334155;
+  --color-card-foreground: #f8fafc;
+  --color-popover: #1e293b;
+  --color-popover-foreground: #f8fafc;
 
   /* Dark text */
-  --color-foreground: #f8fafc !important;
-  --color-text-main: #f8fafc !important;
-  --color-text-muted: #94a3b8 !important;
-  --color-text-subtext: #94a3b8 !important;
-  --color-card-foreground: #f8fafc !important;
-  --color-popover-foreground: #f8fafc !important;
-  --color-sidebar-foreground: #f8fafc !important;
-  --color-muted-foreground: #94a3b8 !important;
-  --color-sidebar-accent-foreground: #f8fafc !important;
+  --color-foreground: #f8fafc;
+  --color-foreground-secondary: #cbd5e1;
+  --color-foreground-muted: #94a3b8;
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-subtext: #94a3b8;
+  --color-muted-foreground: #94a3b8;
 
-  /* Dark borders - Enhanced visibility */
-  --color-border: #334155 !important;
-  --color-border-light: #1e293b !important;
-  --color-sidebar-border: #334155 !important;
+  /* Dark borders */
+  --color-border: #334155;
+  --color-border-light: #1e293b;
+  --color-border-focus: #10b981;
 
-  /* Dark accent/input */
-  --color-input: #1e293b !important;
-  --color-accent: #1e293b !important;
-  --color-accent-foreground: #f8fafc !important;
-  --color-muted: #0f172a !important;
-  --color-sidebar-accent: #0f172a !important;
-  --color-islamic-green: #16a085 !important;
-  --color-islamic-green-light: #1e293b !important;
-}
+  /* Dark ring, input, accent */
+  --color-ring: #10b981;
+  --color-input: #1e293b;
+  --color-input-border: #334155;
+  --color-input-focus: #10b981;
+  --color-accent: #1e293b;
+  --color-accent-foreground: #f8fafc;
+  --color-muted: #0f172a;
 
-/* Dark mode specific overrides */
-.dark body {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-}
+  /* Destructive - Dark Mode */
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
 
-.dark .bg-background {
-  background-color: #0f172a !important;
-}
+  /* Status Colors - Dark Mode (brighter for visibility) */
+  --color-success: #10b981;
+  --color-success-foreground: #ffffff;
+  --color-success-bg: #064e3b;
+  --color-warning: #fbbf24;
+  --color-warning-foreground: #1f2937;
+  --color-warning-bg: #78350f;
+  --color-error: #ef4444;
+  --color-error-foreground: #ffffff;
+  --color-error-bg: #7f1d1d;
+  --color-info: #3b82f6;
+  --color-info-foreground: #ffffff;
+  --color-info-bg: #1e3a8a;
 
-.dark .bg-card {
-  background-color: #1e293b !important;
-  color: #f8fafc !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
-}
+  /* Dark accent colors */
+  --color-accent-light: #064e3b;
+  --color-islamic-green: #16a085;
+  --color-islamic-green-light: #1e293b;
 
-.dark .bg-surface {
-  background-color: #0f172a !important;
-}
+  /* Shadow System - Dark Mode (darker, more pronounced) */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -1px rgb(0 0 0 / 0.2);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -2px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -1px rgb(0 0 0 / 0.2);
+  --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -2px rgb(0 0 0 / 0.3);
+  --shadow-navbar: 0 1px 3px 0 rgb(0 0 0 / 0.4);
 
-.dark .border-border {
-  border-color: #1e293b !important;
-}
-
-.dark .text-foreground {
-  color: #f8fafc !important;
-}
-
-.dark .text-muted-foreground {
-  color: #94a3b8 !important;
+  /* Sidebar - Dark Mode */
+  --color-sidebar: #0f172a;
+  --color-sidebar-foreground: #f8fafc;
+  --color-sidebar-primary: #10b981;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #1e293b;
+  --color-sidebar-accent-foreground: #f8fafc;
+  --color-sidebar-border: #334155;
+  --color-sidebar-ring: #64748b;
 }
 
 /* Text selection */
@@ -156,12 +213,12 @@
     font-family: "Cairo", sans-serif;
   }
   
-  /* Enhanced card shadows for better visibility */
+  /* Card shadows using CSS variables */
   .bg-card {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-card);
   }
   
-  .dark .bg-card {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  .bg-card:hover {
+    box-shadow: var(--shadow-card-hover);
   }
 }
