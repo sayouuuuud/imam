@@ -1,0 +1,176 @@
+import type { Metadata } from "next"
+import { createPublicClient } from "@/lib/supabase/public"
+import Link from "next/link"
+import { Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { ImageWithFallback } from "@/components/ui/image-with-fallback"
+
+export const metadata: Metadata = {
+  title: "المقالات والبحوث - الشيخ السيد مراد",
+  description: "مجموعة من المقالات والبحوث العلمية في العلوم الشرعية والقضايا المعاصرة من الشيخ السيد مراد",
+  keywords: ["مقالات إسلامية", "بحوث", "فقه", "قضايا معاصرة"],
+  openGraph: {
+    title: "المقالات والبحوث",
+    description: "مقالات وبحوث شرعية معمقة",
+    type: "website",
+  },
+}
+
+export default async function ArticlesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; category?: string }>
+}) {
+  const params = await searchParams
+  const supabase = createPublicClient()
+
+  // Fetch categories
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("type", "article")
+    .order("name", { ascending: true })
+
+  // Build query - Now fetching thumbnail and featured_image properly
+  let query = supabase
+    .from("articles")
+    .select("id, title, author, thumbnail, featured_image, publish_status, created_at")
+    .eq("publish_status", "published")
+    .order("created_at", { ascending: false })
+
+  if (params.search) {
+    query = query.or(`title.ilike.%${params.search}%,content.ilike.%${params.search}%`)
+  }
+
+  if (params.category && params.category !== "الكل") {
+    query = query.eq("category_id", params.category)
+  }
+
+  const { data: articles } = await query
+
+  // Convert image keys to download URLs
+  const articlesWithImageUrls = articles?.map(article => ({
+    ...article,
+    thumbnailUrl: article.thumbnail?.startsWith('uploads/') ? `/api/download?key=${encodeURIComponent(article.thumbnail)}` : article.thumbnail,
+    featuredImageUrl: article.featured_image?.startsWith('uploads/') ? `/api/download?key=${encodeURIComponent(article.featured_image)}` : article.featured_image,
+    // Determine primary image for display
+    primaryImageUrl: getPrimaryImageUrl(article.thumbnail, article.featured_image)
+  })) || []
+
+  // Helper function to determine which image to show
+  function getPrimaryImageUrl(thumbnail: string | null, featuredImage: string | null): string | null {
+    // Priority: featured_image if it's not a placeholder, then thumbnail if it's not a placeholder
+    const isFeaturedPlaceholder = !featuredImage || featuredImage.includes('placeholder')
+    const isThumbnailPlaceholder = !thumbnail || thumbnail.includes('placeholder')
+
+    if (!isFeaturedPlaceholder) {
+      return featuredImage?.startsWith('uploads/') ? `/api/download?key=${encodeURIComponent(featuredImage)}` : featuredImage
+    } else if (!isThumbnailPlaceholder) {
+      return thumbnail?.startsWith('uploads/') ? `/api/download?key=${encodeURIComponent(thumbnail)}` : thumbnail
+    } else {
+      return null // Will show placeholder
+    }
+  }
+
+  console.log("[v0] Articles fetched:", articlesWithImageUrls?.length || 0)
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto">
+            <span className="inline-block bg-primary/10 text-primary px-4 py-1 rounded-full text-sm font-bold mb-4">
+              المقالات والبحوث
+            </span>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              مقالات <span className="text-primary">علمية</span> متنوعة
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              مجموعة من المقالات والبحوث العلمية في العلوم الشرعية والقضايا المعاصرة
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Filters */}
+      <section className="py-8 border-b">
+        <div className="container mx-auto px-4">
+          <form className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full md:w-96">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                name="search"
+                defaultValue={params.search}
+                placeholder="ابحث في المقالات..."
+                className="pr-10 bg-muted"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <Link href="/articles">
+                <Button variant={!params.category || params.category === "الكل" ? "default" : "outline"} size="sm">
+                  الكل
+                </Button>
+              </Link>
+              {categories?.map((cat) => (
+                <Link key={cat.id} href={`/articles?category=${encodeURIComponent(cat.name)}`}>
+                  <Button variant={params.category === cat.name ? "default" : "outline"} size="sm">
+                    {cat.name}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+          </form>
+        </div>
+      </section>
+
+      {/* Articles Grid - Fixed to show actual images from database */}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          {!articles || articles.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
+                <Search className="h-10 w-10 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">لا توجد مقالات</h3>
+              <p className="text-muted-foreground">لم يتم العثور على مقالات مطابقة لبحثك</p>
+            </div>
+          ) : (
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {articlesWithImageUrls.map((article) => {
+                const imagePath = article.primaryImageUrl
+                return (
+                  <Link key={article.id} href={`/articles/${article.id}`} className="group">
+                    <article className="bg-card rounded-2xl overflow-hidden border shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col ring-1 ring-black/5 dark:ring-white/5">
+                      {/* Thumbnail - Now properly displays actual images */}
+                      <div className="aspect-video overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10">
+                        <ImageWithFallback
+                          src={imagePath || "/placeholder.svg"}
+                          alt={article.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="p-6 flex-1 flex flex-col">
+                        {/* Title */}
+                        <h2 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                          {article.title}
+                        </h2>
+                        {/* Author */}
+                        <div className="flex items-center gap-2 text-sm text-secondary font-medium mt-auto">
+                          <span className="material-icons-outlined text-sm">person</span>
+                          <span>{article.author}</span>
+                        </div>
+                      </div>
+                    </article>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  )
+}
