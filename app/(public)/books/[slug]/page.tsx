@@ -8,15 +8,26 @@ import { getBookOgImage } from "@/lib/utils/og-images"
 import { Metadata } from "next"
 import { JsonLd } from "@/components/json-ld"
 import { generateBookSchema, generateBreadcrumbSchema } from "@/lib/schema-generator"
+import { redirect } from "next/navigation"
 
 interface PageProps {
-    params: Promise<{ id: string }>
+    params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { id } = await params
+    const { slug } = await params
     const supabase = await createClient()
-    const { data: book } = await supabase.from("books").select("title, description, cover_image_path, cover_image").eq("id", id).single()
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+    const query = supabase.from("books").select("title, description, cover_image_path, cover_image")
+    if (isUuid) {
+        query.eq("id", slug)
+    } else {
+        query.eq("slug", decodeURIComponent(slug))
+    }
+
+    const { data: book } = await query.single()
 
     if (!book) return { title: "الكتاب غير موجود" }
 
@@ -103,16 +114,19 @@ const getPdfViewUrl = (book: any) => {
 }
 
 export default async function BookDetailPage({ params }: PageProps) {
-    const { id } = await params
+    const { slug } = await params
     const supabase = await createClient()
 
-    // Parallel data fetching
-    const [bookResponse, relatedBooksResponse] = await Promise.all([
-        supabase.from("books").select("*").eq("id", id).eq("publish_status", "published").single(),
-        supabase.from("books").select("id, title, author, cover_image_path, created_at, views_count").eq("publish_status", "published").neq("id", id).limit(4).order("created_at", { ascending: false })
-    ])
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
-    const book = bookResponse.data
+    // Fetch book
+    const bookQuery = supabase.from("books").select("*").eq("publish_status", "published");
+    if (isUuid) {
+        bookQuery.eq("id", slug);
+    } else {
+        bookQuery.eq("slug", decodeURIComponent(slug));
+    }
+    const { data: book } = await bookQuery.single();
 
     // Handle Not Found
     if (!book) {
@@ -141,10 +155,22 @@ export default async function BookDetailPage({ params }: PageProps) {
         )
     }
 
-    // Increment views
-    await supabase.from("books").update({ views_count: (book.views_count || 0) + 1 }).eq("id", id)
+    if (isUuid && book.slug) {
+        redirect(`/books/${book.slug}`);
+    }
 
-    const relatedBooksData = relatedBooksResponse.data || []
+    // Fetch related books
+    const { data: relatedBooksDataRaw } = await supabase.from("books")
+        .select("id, slug, title, author, cover_image_path, created_at, views_count")
+        .eq("publish_status", "published")
+        .neq("id", book.id)
+        .limit(4)
+        .order("created_at", { ascending: false });
+
+    // Increment views
+    await supabase.from("books").update({ views_count: (book.views_count || 0) + 1 }).eq("id", book.id)
+
+    const relatedBooksData = relatedBooksDataRaw || []
 
     // Data processing
     const coverImageUrl = getCoverImageUrl(book)
@@ -158,7 +184,7 @@ export default async function BookDetailPage({ params }: PageProps) {
     const bookSchema = await generateBookSchema({
         title: book.title,
         description: book.description ? stripHtml(book.description) : undefined,
-        url: `/books/${book.id}`,
+        url: `/books/${book.slug || book.id}`,
         image: coverImageUrl || undefined,
         authorName: book.author || undefined,
         datePublished: book.publish_year || undefined,
@@ -168,7 +194,7 @@ export default async function BookDetailPage({ params }: PageProps) {
     const breadcrumbSchema = await generateBreadcrumbSchema([
         { name: 'الرئيسية', item: '/' },
         { name: 'الكتب', item: '/books' },
-        { name: book.title, item: `/books/${book.id}` },
+        { name: book.title, item: `/books/${book.slug || book.id}` },
     ])
 
     return (
@@ -322,7 +348,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                         {relatedBooksData.map((relatedBook) => (
                             <Link
                                 key={relatedBook.id}
-                                href={`/books/${relatedBook.id}`}
+                                href={`/books/${relatedBook.slug || relatedBook.id}`}
                                 className="group bg-surface rounded-xl border border-border p-4 hover:shadow-xl hover:shadow-primary/5 transition duration-300 flex flex-col items-center text-center"
                             >
                                 <BookCoverImage

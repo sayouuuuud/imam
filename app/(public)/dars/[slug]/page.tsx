@@ -12,15 +12,26 @@ import { getLessonOgImage } from "@/lib/utils/og-images"
 import { Metadata } from "next"
 import { JsonLd } from "@/components/json-ld"
 import { generateArticleSchema, generateVideoSchema, generateAudioSchema, generateBreadcrumbSchema, formatDurationToISO } from "@/lib/schema-generator"
+import { redirect } from "next/navigation"
 
 interface PageProps {
-    params: Promise<{ id: string }>
+    params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { id } = await params
+    const { slug } = await params
     const supabase = await createClient()
-    const { data: lesson } = await supabase.from("lessons").select("title, description, thumbnail, thumbnail_path").eq("id", id).single()
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+    const query = supabase.from("lessons").select("title, description, thumbnail, thumbnail_path")
+    if (isUuid) {
+        query.eq("id", slug)
+    } else {
+        query.eq("slug", decodeURIComponent(slug))
+    }
+
+    const { data: lesson } = await query.single()
 
     if (!lesson) return { title: "الدرس غير موجود" }
 
@@ -108,16 +119,19 @@ const parseDurationToSeconds = (durationStr: string | null | undefined): number 
 }
 
 export default async function DarsDetailPage({ params }: PageProps) {
-    const { id } = await params
+    const { slug } = await params
     const supabase = await createClient()
 
-    // Parallel data fetching
-    const [lessonResponse, relatedLessonsResponse] = await Promise.all([
-        supabase.from("lessons").select("*").eq("id", id).eq("publish_status", "published").single(),
-        supabase.from("lessons").select("id, title, thumbnail_path, created_at, views_count, lesson_type").eq("publish_status", "published").neq("id", id).order("created_at", { ascending: false }).limit(4)
-    ])
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
-    const lesson = lessonResponse.data
+    // Fetch lesson
+    const lessonQuery = supabase.from("lessons").select("*").eq("publish_status", "published");
+    if (isUuid) {
+        lessonQuery.eq("id", slug);
+    } else {
+        lessonQuery.eq("slug", decodeURIComponent(slug));
+    }
+    const { data: lesson } = await lessonQuery.single();
 
     if (!lesson) {
         return (
@@ -145,17 +159,29 @@ export default async function DarsDetailPage({ params }: PageProps) {
         )
     }
 
-    // Increment views
-    await supabase.from("lessons").update({ views_count: (lesson.views_count || 0) + 1 }).eq("id", id)
+    if (isUuid && lesson.slug) {
+        redirect(`/dars/${lesson.slug}`);
+    }
 
-    const relatedLessons = relatedLessonsResponse.data || []
+    // Fetch related lessons
+    const { data: relatedLessonsData } = await supabase.from("lessons")
+        .select("id, slug, title, thumbnail_path, created_at, views_count, lesson_type")
+        .eq("publish_status", "published")
+        .neq("id", lesson.id)
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+    // Increment views
+    await supabase.from("lessons").update({ views_count: (lesson.views_count || 0) + 1 }).eq("id", lesson.id)
+
+    const relatedLessons = relatedLessonsData || []
     const audioUrl = getAudioUrl(lesson)
     const thumbnailPath = getThumbnailPath(lesson)
 
     const articleSchema = await generateArticleSchema({
         title: lesson.title,
         description: lesson.description ? stripHtml(lesson.description) : undefined,
-        url: `/dars/${lesson.id}`,
+        url: `/dars/${lesson.slug || lesson.id}`,
         image: thumbnailPath,
         datePublished: lesson.created_at,
         dateModified: lesson.created_at,
@@ -166,14 +192,16 @@ export default async function DarsDetailPage({ params }: PageProps) {
     const mediaSchema = isVideo ? await generateVideoSchema({
         title: lesson.title,
         description: lesson.description ? stripHtml(lesson.description) : lesson.title,
+        url: `/dars/${lesson.slug || lesson.id}`,
         uploadDate: lesson.created_at,
-        thumbnailUrl: thumbnailPath ? (thumbnailPath.startsWith('http') ? thumbnailPath : `https://elsayed-mourad.online${thumbnailPath}`) : 'https://elsayed-mourad.online/video-thumbnail.png',
+        thumbnail: thumbnailPath ? (thumbnailPath.startsWith('http') ? thumbnailPath : `https://elsayed-mourad.online${thumbnailPath}`) : 'https://elsayed-mourad.online/video-thumbnail.png',
         contentUrl: !lesson.youtube_url && audioUrl ? (audioUrl.startsWith('http') ? audioUrl : `https://elsayed-mourad.online${audioUrl}`) : undefined,
         embedUrl: lesson.youtube_url ? `https://www.youtube.com/embed/${lesson.youtube_url.split("v=")[1]?.split("&")[0] || lesson.youtube_url.split("/").pop()}` : undefined,
         duration: formatDurationToISO(lesson.duration),
     }) : (audioUrl ? await generateAudioSchema({
         title: lesson.title,
         description: lesson.description ? stripHtml(lesson.description) : undefined,
+        url: `/dars/${lesson.slug || lesson.id}`,
         uploadDate: lesson.created_at,
         contentUrl: audioUrl.startsWith('http') ? audioUrl : `https://elsayed-mourad.online${audioUrl}`,
         duration: formatDurationToISO(lesson.duration),
@@ -182,7 +210,7 @@ export default async function DarsDetailPage({ params }: PageProps) {
     const breadcrumbSchema = await generateBreadcrumbSchema([
         { name: 'الرئيسية', item: '/' },
         { name: 'الدروس العلمية', item: '/dars' },
-        { name: lesson.title, item: `/dars/${lesson.id}` },
+        { name: lesson.title, item: `/dars/${lesson.slug || lesson.id}` },
     ])
 
     return (
@@ -345,7 +373,7 @@ export default async function DarsDetailPage({ params }: PageProps) {
                                 <h2 className="text-2xl font-bold text-foreground mb-6">آخر الدروس</h2>
                                 <div className="grid md:grid-cols-3 gap-6">
                                     {relatedLessons.map((relatedLesson) => (
-                                        <Link key={relatedLesson.id} href={`/dars/${relatedLesson.id}`} className="group">
+                                        <Link key={relatedLesson.id} href={`/dars/${relatedLesson.slug || relatedLesson.id}`} className="group">
                                             <div className="bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-colors">
                                                 <BookCoverImage
                                                     coverImagePath={getThumbnailPath(relatedLesson)}
@@ -383,7 +411,7 @@ export default async function DarsDetailPage({ params }: PageProps) {
                                 <h3 className="text-lg font-bold text-foreground mb-4">آخر الدروس</h3>
                                 <div className="space-y-4">
                                     {relatedLessons.map((relatedLesson) => (
-                                        <Link key={relatedLesson.id} href={`/dars/${relatedLesson.id}`} className="group flex gap-3">
+                                        <Link key={relatedLesson.id} href={`/dars/${relatedLesson.slug || relatedLesson.id}`} className="group flex gap-3">
                                             <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                                                 <BookCoverImage
                                                     coverImagePath={getThumbnailPath(relatedLesson)}

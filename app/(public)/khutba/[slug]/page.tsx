@@ -12,17 +12,29 @@ import { stripHtml } from "@/lib/utils/strip-html"
 import { getSermonOgImage } from "@/lib/utils/og-images"
 
 import { Metadata } from "next"
+import { redirect } from "next/navigation"
 import { JsonLd } from "@/components/json-ld"
 import { generateArticleSchema, generateAudioSchema, generateBreadcrumbSchema, formatDurationToISO } from "@/lib/schema-generator"
 
 interface PageProps {
-    params: Promise<{ id: string }>
+    params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { id } = await params
+    const { slug } = await params
     const supabase = await createClient()
-    const { data: sermon } = await supabase.from("sermons").select("title, description").eq("id", id).single()
+
+    // Check if slug is a UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+    const query = supabase.from("sermons").select("title, description")
+    if (isUuid) {
+        query.eq("id", slug)
+    } else {
+        query.eq("slug", decodeURIComponent(slug))
+    }
+
+    const { data: sermon } = await query.single()
 
     if (!sermon) return { title: "الخطبة غير موجودة" }
 
@@ -88,16 +100,19 @@ const parseDurationToSeconds = (durationStr: string | null | undefined): number 
 }
 
 export default async function KhutbaDetailPage({ params }: PageProps) {
-    const { id } = await params
+    const { slug } = await params
     const supabase = await createClient()
 
-    // Parallel data fetching
-    const [sermonResponse, relatedSermonsResponse] = await Promise.all([
-        supabase.from("sermons").select("*").eq("id", id).eq("publish_status", "published").single(),
-        supabase.from("sermons").select("id, title, thumbnail_path, created_at, views_count").eq("publish_status", "published").neq("id", id).limit(3).order("created_at", { ascending: false })
-    ])
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
-    const sermon = sermonResponse.data
+    // Fetch sermon
+    const sermonQuery = supabase.from("sermons").select("*").eq("publish_status", "published");
+    if (isUuid) {
+        sermonQuery.eq("id", slug);
+    } else {
+        sermonQuery.eq("slug", decodeURIComponent(slug));
+    }
+    const { data: sermon } = await sermonQuery.single();
 
     if (!sermon) {
         return (
@@ -125,17 +140,30 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
         )
     }
 
-    // Increment views
-    await supabase.from("sermons").update({ views_count: (sermon.views_count || 0) + 1 }).eq("id", id)
+    // Permanent redirect if accessed via UUID but has a slug
+    if (isUuid && sermon.slug) {
+        redirect(`/khutba/${sermon.slug}`);
+    }
 
-    const relatedSermons = relatedSermonsResponse.data || []
+    // Fetch related sermons
+    const { data: relatedSermonsData } = await supabase.from("sermons")
+        .select("id, slug, title, thumbnail_path, created_at, views_count")
+        .eq("publish_status", "published")
+        .neq("id", sermon.id)
+        .limit(3)
+        .order("created_at", { ascending: false });
+
+    // Increment views
+    await supabase.from("sermons").update({ views_count: (sermon.views_count || 0) + 1 }).eq("id", sermon.id)
+
+    const relatedSermons = relatedSermonsData || []
     const audioUrl = getAudioUrl(sermon)
     const thumbnailPath = getThumbnailPath(sermon)
 
     const articleSchema = await generateArticleSchema({
         title: sermon.title,
         description: sermon.description ? stripHtml(sermon.description) : undefined,
-        url: `/khutba/${sermon.id}`,
+        url: `/khutba/${sermon.slug || sermon.id}`,
         image: thumbnailPath,
         datePublished: sermon.created_at,
         dateModified: sermon.created_at, // Assuming no update time available
@@ -144,6 +172,7 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
     const audioSchema = audioUrl ? await generateAudioSchema({
         title: sermon.title,
         description: sermon.description ? stripHtml(sermon.description) : undefined,
+        url: `/khutba/${sermon.slug || sermon.id}`,
         uploadDate: sermon.created_at,
         contentUrl: audioUrl.startsWith('http') ? audioUrl : `https://elsayed-mourad.online${audioUrl}`,
         duration: formatDurationToISO(sermon.duration),
@@ -152,7 +181,7 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
     const breadcrumbSchema = await generateBreadcrumbSchema([
         { name: 'الرئيسية', item: '/' },
         { name: 'الخطب المنبرية', item: '/khutba' },
-        { name: sermon.title, item: `/khutba/${sermon.id}` },
+        { name: sermon.title, item: `/khutba/${sermon.slug || sermon.id}` },
     ])
 
     return (
@@ -277,7 +306,7 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
                                 </div>
                                 <div className="space-y-4">
                                     {relatedSermons.map((relatedSermon) => (
-                                        <Link key={relatedSermon.id} href={`/khutba/${relatedSermon.id}`} className="group block">
+                                        <Link key={relatedSermon.id} href={`/khutba/${relatedSermon.slug || relatedSermon.id}`} className="group block">
                                             <div className="flex gap-4 items-start">
                                                 <div className="w-20 h-20 rounded-lg bg-muted shrink-0 overflow-hidden relative">
                                                     <div className="absolute inset-0 bg-primary/20 group-hover:bg-primary/40 transition-colors flex items-center justify-center">
