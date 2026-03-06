@@ -114,7 +114,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     verification: {
       google: googleVerification,
-      ...(bingVerification ? { other: { "msvalidate.01": bingVerification } } : {}),
+      other: {
+        "msvalidate.01": ["7FA9C0D56E06CA724EDF3C306615F8D4", bingVerification].filter(Boolean) as string[],
+      },
     },
     generator: "v0.app",
     appleWebApp: {

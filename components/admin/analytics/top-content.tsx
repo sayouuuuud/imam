@@ -1,14 +1,36 @@
-"use client"
-
-import { useState } from "react"
-import { Eye, Calendar, Filter } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Eye, Calendar, Filter, Loader2 } from "lucide-react"
 
 interface TopContentProps {
-    initialData: any[] // We'll fetch this from the server
+    initialData: any[]
 }
 
 export function TopContent({ initialData }: TopContentProps) {
     const [period, setPeriod] = useState("week") // week, month, year
+    const [data, setData] = useState(initialData)
+    const [isLoading, setIsLoading] = useState(false)
+
+    useEffect(() => {
+        // Skip first render if it's the default period and we have initial data
+        if (period === "week" && data === initialData) return;
+
+        const fetchData = async () => {
+            setIsLoading(true)
+            try {
+                const response = await fetch(`/api/analytics/top-content?period=${period}`)
+                if (response.ok) {
+                    const newData = await response.json()
+                    setData(newData)
+                }
+            } catch (error) {
+                console.error("Failed to fetch top content:", error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchData()
+    }, [period])
 
     // Helper to format type
     const formatType = (type: string) => {
@@ -28,38 +50,39 @@ export function TopContent({ initialData }: TopContentProps) {
                     <div className="p-2 bg-primary/10 rounded-lg text-primary">
                         <Filter className="h-5 w-5" />
                     </div>
-                    <h3 className="font-bold text-foreground">المحتوى الأكثر مشاهدة</h3>
+                    <div className="flex items-center gap-3">
+                        <h3 className="font-bold text-foreground">المحتوى الأكثر مشاهدة</h3>
+                        {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                    </div>
                 </div>
 
                 <div className="flex bg-muted rounded-lg p-1">
-                    {/* Time filters are currently visual-only because strictly speaking
-                        'top pages' data comes pre-aggregated from the database view.
-                        To implement real filtering, we would need to pass period to server
-                        or have daily stats for pages. For now, we keep the UI ready. 
-                    */}
                     <button
                         onClick={() => setPeriod("week")}
+                        disabled={isLoading}
                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${period === "week"
                             ? "bg-background text-foreground shadow-sm"
-                            : "text-text-muted hover:text-foreground"
+                            : "text-text-muted hover:text-foreground disabled:opacity-50"
                             }`}
                     >
                         أسبوع
                     </button>
                     <button
                         onClick={() => setPeriod("month")}
+                        disabled={isLoading}
                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${period === "month"
                             ? "bg-background text-foreground shadow-sm"
-                            : "text-text-muted hover:text-foreground"
+                            : "text-text-muted hover:text-foreground disabled:opacity-50"
                             }`}
                     >
                         شهر
                     </button>
                     <button
                         onClick={() => setPeriod("year")}
+                        disabled={isLoading}
                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${period === "year"
                             ? "bg-background text-foreground shadow-sm"
-                            : "text-text-muted hover:text-foreground"
+                            : "text-text-muted hover:text-foreground disabled:opacity-50"
                             }`}
                     >
                         سنة
@@ -67,7 +90,7 @@ export function TopContent({ initialData }: TopContentProps) {
                 </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className={`overflow-x-auto transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
                 <table className="w-full text-sm">
                     <thead className="bg-muted/50 text-text-muted">
                         <tr>
@@ -78,8 +101,8 @@ export function TopContent({ initialData }: TopContentProps) {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {initialData && initialData.length > 0 ? (
-                            initialData.map((item, i) => (
+                        {data && data.length > 0 ? (
+                            data.map((item, i) => (
                                 <tr key={i} className="hover:bg-muted/30 transition-colors">
                                     <td className="px-4 py-3 font-medium text-foreground max-w-[200px] truncate" title={item.title}>
                                         {item.title}
@@ -89,7 +112,7 @@ export function TopContent({ initialData }: TopContentProps) {
                                     </td>
                                     <td className="px-4 py-3 text-foreground font-bold flex items-center gap-1">
                                         <Eye className="h-3 w-3 text-text-muted" />
-                                        {item.views.toLocaleString()}
+                                        {(item.views || 0).toLocaleString()}
                                     </td>
                                     <td className="px-4 py-3 text-text-muted">
                                         {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString("ar-EG") : "-"}
@@ -98,8 +121,13 @@ export function TopContent({ initialData }: TopContentProps) {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={4} className="px-4 py-8 text-center text-text-muted">
-                                    لا توجد بيانات متاحة لهذه الفترة
+                                <td colSpan={4} className="px-4 py-12 text-center text-text-muted">
+                                    {isLoading ? (
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Loader2 className="h-8 w-8 animate-spin opacity-20" />
+                                            <p>جاري تحميل البيانات...</p>
+                                        </div>
+                                    ) : "لا توجد بيانات متاحة لهذه الفترة"}
                                 </td>
                             </tr>
                         )}

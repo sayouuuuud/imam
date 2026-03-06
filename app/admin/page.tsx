@@ -88,7 +88,10 @@ export default async function AdminDashboard() {
       .gte("date", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
       .order("date", { ascending: true }),
     // New Analytics Queries
-    supabase.from("analytics_top_pages").select("*").limit(10),
+    supabase.from("analytics_visits")
+      .select("page_path")
+      .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      .not("page_path", "is", null),
     supabase.from("analytics_country_stats").select("*").limit(10),
     supabase.from("analytics_device_stats").select("*"),
     // Fetch download counts
