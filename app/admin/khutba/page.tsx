@@ -125,6 +125,7 @@ function SermonForm({
                 <Label>نص الخطبة</Label>
                 <RichTextEditor
                     content={formData.content}
+                    defaultFont="Amiri"
                     onChange={(html) =>
                         setFormData((prev) => ({
                             ...prev,

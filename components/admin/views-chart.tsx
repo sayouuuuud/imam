@@ -13,13 +13,18 @@ interface AnalyticsData {
 
 interface ViewsChartProps {
     data: AnalyticsData[]
+    period?: string
+    onPeriodChange?: (period: string) => void
 }
 
-export function ViewsChart({ data }: ViewsChartProps) {
+export function ViewsChart({ data, period: externalPeriod, onPeriodChange }: ViewsChartProps) {
     const [selectedDay, setSelectedDay] = useState<number | null>(null)
     const [hoveredDay, setHoveredDay] = useState<number | null>(null)
     const [metric, setMetric] = useState<"views" | "visitors">("views")
-    const [period, setPeriod] = useState("آخر 30 يوم")
+    const [internalPeriod, setInternalPeriod] = useState("آخر 30 يوم")
+
+    const period = externalPeriod || internalPeriod
+    const setPeriod = onPeriodChange || setInternalPeriod
 
     // Filter data based on period
 

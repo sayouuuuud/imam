@@ -39,7 +39,10 @@ export async function GET(request: NextRequest) {
         // Aggregate page views manually (since we want counts over a period)
         const pageCounts: Record<string, number> = {};
         (topPagesData || []).forEach((item: any) => {
-            pageCounts[item.page_path] = (pageCounts[item.page_path] || 0) + 1;
+            const normalizedPath = item.page_path?.split('?')[0] || '';
+            if (normalizedPath) {
+                pageCounts[normalizedPath] = (pageCounts[normalizedPath] || 0) + 1;
+            }
         });
 
         // Sort and limit to top 10
@@ -57,7 +60,7 @@ export async function GET(request: NextRequest) {
             const cleanPath = item.page_path.replace(/^\/|\/$/g, '');
             const pathParts = cleanPath.split('/');
             const mainSection = pathParts[0];
-            const id = pathParts.length > 1 ? pathParts[pathParts.length - 1] : null;
+            const pathIdentifier = pathParts.length > 1 ? pathParts[pathParts.length - 1] : null;
 
             // Handle Index Pages
             if (pathParts.length === 1) {
@@ -69,36 +72,44 @@ export async function GET(request: NextRequest) {
                 else if (mainSection === "contact") { title = "تواصل معنا"; type = "page"; }
             }
             // Handle Content Pages
-            else if (id && id.length > 20) { // Simple UUID check
-                try {
-                    const getTitleDate = async (table: string) => {
-                        const { data } = await supabase.from(table).select("title, created_at").eq("id", id).single();
-                        return data ? { title: data.title, date: data.created_at } : null;
-                    };
-                    const getTitleDateSermons = async (table: string) => {
-                        const { data } = await supabase.from(table).select("title, date").eq("id", id).single();
-                        return data ? { title: data.title, date: data.date } : null;
-                    };
+            else if (pathIdentifier) {
+                const getTitleDate = async (table: string, hasDateString: boolean = false) => {
+                    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pathIdentifier);
+                    
+                    let query = supabase.from(table).select(hasDateString ? "title, date" : "title, created_at");
+                    if (isUuid) {
+                        query = query.eq("id", pathIdentifier);
+                    } else {
+                        query = query.eq("slug", decodeURIComponent(pathIdentifier));
+                    }
+                    
+                    const { data } = await query.single();
+                    if (data) {
+                        return { title: data.title, date: hasDateString ? (data as any).date : (data as any).created_at };
+                    }
+                    return null;
+                };
 
+                try {
                     if (mainSection === "khutba") {
                         type = 'khutba';
-                        const info = await getTitleDateSermons("sermons");
+                        const info = await getTitleDate("sermons", true);
                         if (info) { title = info.title; publishedAt = info.date; }
                     } else if (mainSection === "dars") {
                         type = 'dars';
-                        const info = await getTitleDateSermons("lessons");
+                        const info = await getTitleDate("lessons", true);
                         if (info) { title = info.title; publishedAt = info.date; }
                     } else if (mainSection === "books") {
                         type = 'book';
-                        const info = await getTitleDate("books");
+                        const info = await getTitleDate("books", false);
                         if (info) { title = info.title; publishedAt = info.date; }
                     } else if (mainSection === "articles") {
                         type = 'article';
-                        const info = await getTitleDate("articles");
+                        const info = await getTitleDate("articles", false);
                         if (info) { title = info.title; publishedAt = info.date; }
                     }
                 } catch (e) {
-                    // Fallback to path if id is not valid UUID or not found
+                    // Fallback to path if not found
                 }
             }
 

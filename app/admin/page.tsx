@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { ViewsChart } from "@/components/admin/views-chart";
+import { DashboardAnalyticsWrapper } from "@/components/admin/analytics/dashboard-analytics-wrapper";
 import { TopContent } from "@/components/admin/analytics/top-content";
-import { VisitorStats } from "@/components/admin/analytics/visitors-stats";
 import {
   PlusCircle,
   Mic,
@@ -54,7 +53,6 @@ export default async function AdminDashboard() {
     // New Analytics Queries
     { data: topPagesData },
     { data: countryStats },
-    { data: deviceStats },
     { data: booksDownloadsData },
     { data: lessonsDownloadsData },
     { data: sermonsDownloadsData },
@@ -92,16 +90,60 @@ export default async function AdminDashboard() {
       .select("page_path")
       .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
       .not("page_path", "is", null),
-    supabase.from("analytics_country_stats").select("*").limit(10),
-    supabase.from("analytics_device_stats").select("*"),
+    supabase.from("analytics_visits")
+      .select("country, device_type")
+      .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
     // Fetch download counts
     supabase.from("books").select("download_count"),
     supabase.from("lessons").select("download_count"),
-    supabase.from("sermons").select("download_count"),
+     supabase.from("sermons").select("download_count"),
   ]);
 
+  // Initial Country and Device Aggregation (Last 30 Days)
+  const initialCountryCounts: Record<string, number> = {};
+  const initialDeviceCounts: Record<string, number> = {};
+  let totalVisitsForDevices = 0;
+
+  (countryStats as any[] || []).forEach((visit) => {
+    const c = visit.country || "Unknown";
+    initialCountryCounts[c] = (initialCountryCounts[c] || 0) + 1;
+
+    const d = visit.device_type || "desktop";
+    initialDeviceCounts[d] = (initialDeviceCounts[d] || 0) + 1;
+    totalVisitsForDevices++;
+  });
+
+  const processedCountryStats = Object.entries(initialCountryCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([country, count]) => ({ country, count }));
+
+  const processedDeviceStats = Object.entries(initialDeviceCounts)
+    .sort(([, a], [, b]) => b - a)
+    .map(([device_type, count]) => ({
+      device_type,
+      count,
+      percentage: totalVisitsForDevices > 0 ? parseFloat(((count / totalVisitsForDevices) * 100).toFixed(2)) : 0
+    }));
+
+  // Aggregate page views manually (since we want counts over a period)
+  const pageCounts: Record<string, number> = {};
+  (topPagesData || []).forEach((item: any) => {
+    // Basic normalization of path (removing query params if any)
+    const normalizedPath = item.page_path?.split('?')[0] || '';
+    if (normalizedPath) {
+      pageCounts[normalizedPath] = (pageCounts[normalizedPath] || 0) + 1;
+    }
+  });
+
+  // Sort and limit to top 10
+  const sortedPages = Object.entries(pageCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10)
+    .map(([path, views]) => ({ page_path: path, views }));
+
   // Aggregate and sort top content with details
-  const topContentCombined = await Promise.all((topPagesData || []).map(async (item: any) => {
+  const topContentCombined = await Promise.all(sortedPages.map(async (item: any) => {
     let title = item.page_path;
     let type = 'page';
     let publishedAt = null;
@@ -110,7 +152,7 @@ export default async function AdminDashboard() {
     const cleanPath = item.page_path.replace(/^\/|\/$/g, '');
     const pathParts = cleanPath.split('/');
     const mainSection = pathParts[0];
-    const id = pathParts.length > 1 ? pathParts[pathParts.length - 1] : null;
+    const pathIdentifier = pathParts.length > 1 ? pathParts[pathParts.length - 1] : null;
 
     // Handle Index Pages
     if (pathParts.length === 1) {
@@ -122,35 +164,45 @@ export default async function AdminDashboard() {
       else if (mainSection === "contact") { title = "تواصل معنا"; type = "page"; }
     }
     // Handle Content Pages
-    else if (id) {
-      // Use a helper function or direct query
-      const getTitleDate = async (table: string) => {
-        const { data } = await supabase.from(table).select("title, created_at").eq("id", id).single();
-        return data ? { title: data.title, date: data.created_at } : null;
-      };
-      const getTitleDateSermons = async (table: string) => {
-        const { data } = await supabase.from(table).select("title, date").eq("id", id).single();
-        return data ? { title: data.title, date: data.date } : null;
+    else if (pathIdentifier) {
+      // Helper to fetch by either id or slug
+      const getTitleDate = async (table: string, hasDateString: boolean = false) => {
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pathIdentifier);
+          
+          let query = supabase.from(table).select(hasDateString ? "title, date" : "title, created_at");
+          if (isUuid) {
+              query = query.eq("id", pathIdentifier);
+          } else {
+              query = query.eq("slug", decodeURIComponent(pathIdentifier));
+          }
+          
+          const { data } = await query.single();
+          if (data) {
+              return { title: data.title, date: hasDateString ? (data as any).date : (data as any).created_at };
+          }
+          return null;
       };
 
-      if (mainSection === "khutba") {
-        type = 'khutba';
-        const info = await getTitleDateSermons("sermons");
-        if (info) { title = info.title; publishedAt = info.date; }
-      } else if (mainSection === "dars") {
-        type = 'dars';
-        const info = await getTitleDateSermons("lessons");
-        if (info) { title = info.title; publishedAt = info.date; }
-      } else if (mainSection === "books") {
-        type = 'book';
-        // Note: Books usually use created_at, but let's check if there's a specific date field if needed. 
-        // Using created_at as per previous code.
-        const info = await getTitleDate("books");
-        if (info) { title = info.title; publishedAt = info.date; }
-      } else if (mainSection === "articles") {
-        type = 'article';
-        const info = await getTitleDate("articles");
-        if (info) { title = info.title; publishedAt = info.date; }
+      try {
+        if (mainSection === "khutba") {
+          type = 'khutba';
+          const info = await getTitleDate("sermons", true);
+          if (info) { title = info.title; publishedAt = info.date; }
+        } else if (mainSection === "dars") {
+          type = 'dars';
+          const info = await getTitleDate("lessons", true);
+          if (info) { title = info.title; publishedAt = info.date; }
+        } else if (mainSection === "books") {
+          type = 'book';
+          const info = await getTitleDate("books", false);
+          if (info) { title = info.title; publishedAt = info.date; }
+        } else if (mainSection === "articles") {
+          type = 'article';
+          const info = await getTitleDate("articles", false);
+          if (info) { title = info.title; publishedAt = info.date; }
+        }
+      } catch (e) {
+         // Fallback to path if not found
       }
     }
 
@@ -330,23 +382,16 @@ export default async function AdminDashboard() {
         })}
       </div>
 
-      {/* Views Chart */}
-      <ViewsChart data={analyticsData || []} />
+      {/* Dashboard Analytics (Synced Chart & Stats) */}
+      <DashboardAnalyticsWrapper 
+        initialDailyStats={analyticsData || []}
+        initialCountryStats={processedCountryStats}
+        initialDeviceStats={processedDeviceStats}
+      />
 
-      {/* Advanced Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Visitor Stats (Countries & Devices) */}
-        <div className="lg:col-span-3">
-          <VisitorStats
-            countryData={countryStats || []}
-            deviceData={deviceStats || []}
-          />
-        </div>
-
-        {/* Top Content Table */}
-        <div className="lg:col-span-3">
-          <TopContent initialData={topContentCombined || []} />
-        </div>
+      {/* Top Content Table */}
+      <div className="mt-6">
+        <TopContent initialData={topContentCombined || []} />
       </div>
 
       {/* Quick Links */}
