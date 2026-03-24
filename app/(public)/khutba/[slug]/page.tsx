@@ -206,11 +206,11 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
             .no-print, header, footer, .lg\\:col-span-4 { display: none !important; }
           }
       `}</style>
-            <div className="container mx-auto px-4 lg:px-8 py-10 min-h-screen">
+            <div className="container mx-auto px-0 md:px-4 lg:px-8 py-10 min-h-screen">
                 <JsonLd schema={[articleSchema, breadcrumbSchema, ...(audioSchema ? [audioSchema] : [])]} />
 
                 {/* Breadcrumb */}
-                <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-8 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <nav className="px-4 md:px-0 flex items-center text-sm text-gray-500 dark:text-gray-400 mb-8 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     <Link href="/" className="hover:text-primary dark:hover:text-secondary">الرئيسية</Link>
                     <ChevronLeft className="h-4 w-4 mx-2 text-gray-400" />
                     <Link href="/khutba" className="hover:text-primary dark:hover:text-secondary">الخطب المنبرية</Link>
@@ -223,7 +223,7 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
                     {/* Main Content */}
                     <div className="lg:col-span-8 space-y-8">
                         {/* Sermon Header Card */}
-                        <div className="bg-card rounded-2xl p-8 border border-border shadow-sm relative overflow-hidden">
+                        <div className="bg-card rounded-none md:rounded-2xl p-6 md:p-8 border-0 md:border border-border shadow-sm relative overflow-hidden">
                             <span className="material-icons-outlined absolute -left-10 -top-10 text-9xl text-gray-50 dark:text-gray-800/30 opacity-50 transform rotate-12">menu_book</span>
                             <div className="relative z-10">
                                 <div className="flex flex-wrap gap-2 mb-4">
@@ -250,20 +250,22 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
 
                         {/* Audio Player */}
                         {audioUrl && (
-                            <AudioPlayer
-                                src={audioUrl}
-                                title={sermon.title || "خطبة"}
-                                initialDuration={parseDurationToSeconds(sermon.duration)}
-                                audioId={sermon.id}
-                                table="sermons"
-                            />
+                            <div className="px-4 md:px-0">
+                                <AudioPlayer
+                                    src={audioUrl}
+                                    title={sermon.title || "خطبة"}
+                                    initialDuration={parseDurationToSeconds(sermon.duration)}
+                                    audioId={sermon.id}
+                                    table="sermons"
+                                />
+                            </div>
                         )}
 
                         {/* Content */}
                         {sermon.content && (
                             <article
                                 id="sermon-content"
-                                className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-serif prose-p:text-foreground max-w-none bg-card p-8 md:p-12 rounded-2xl border border-border shadow-sm prose-blockquote:border-r-4 prose-blockquote:border-secondary prose-blockquote:bg-secondary/5 prose-blockquote:text-foreground prose-blockquote:font-serif prose-blockquote:text-xl prose-blockquote:leading-relaxed prose-blockquote:p-4 prose-blockquote:rounded-l-lg prose-blockquote:not-italic prose-blockquote:my-8 prose-strong:text-foreground prose-strong:font-bold prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-li:mb-1 prose-a:text-primary prose-a:underline hover:prose-a:no-underline [&_.quran-verse]:text-foreground [&_.quran-verse_p]:text-foreground [&_.quran-verse_footer]:text-muted-foreground overflow-x-hidden break-words [overflow-wrap:anywhere]"
+                                className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-serif prose-p:text-foreground max-w-none bg-card p-6 md:p-12 rounded-none md:rounded-2xl border-0 md:border border-border shadow-sm prose-blockquote:border-r-4 prose-blockquote:border-secondary prose-blockquote:bg-secondary/5 prose-blockquote:text-foreground prose-blockquote:font-serif prose-blockquote:text-xl prose-blockquote:leading-relaxed prose-blockquote:p-4 prose-blockquote:rounded-l-lg prose-blockquote:not-italic prose-blockquote:my-8 prose-strong:text-foreground prose-strong:font-bold prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-li:mb-1 prose-a:text-primary prose-a:underline hover:prose-a:no-underline [&_.quran-verse]:text-foreground [&_.quran-verse_p]:text-foreground [&_.quran-verse_footer]:text-muted-foreground overflow-x-hidden break-words [overflow-wrap:anywhere]"
                             >
                                 <SafeHtml html={sermon.content} />
                             </article>
@@ -271,7 +273,7 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
 
                         {/* Tags */}
                         {sermon.tags && sermon.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
+                            <div className="px-4 md:px-0 flex flex-wrap gap-2">
                                 {sermon.tags.map((tag: string, index: number) => (
                                     <a key={index} className="px-4 py-2 bg-muted hover:bg-accent text-muted-foreground hover:text-accent-foreground rounded-lg text-sm transition-colors border border-border" href="#">
                                         #{tag}
@@ -281,18 +283,20 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
                         )}
 
                         {/* Bottom Interactions (Share & Download Audio) */}
-                        <LessonInteractions
-                            audioUrl={audioUrl}
-                            title={sermon.title}
-                            description={sermon.description}
-                            lessonId={sermon.id}
-                            table="sermons"
-                        />
+                        <div className="px-4 md:px-0">
+                            <LessonInteractions
+                                audioUrl={audioUrl}
+                                title={sermon.title}
+                                description={sermon.description}
+                                lessonId={sermon.id}
+                                table="sermons"
+                            />
+                        </div>
 
                     </div>
 
                     {/* Sidebar */}
-                    <div className="lg:col-span-4 space-y-8 lg:sticky lg:bottom-8 lg:self-end">
+                    <div className="lg:col-span-4 px-4 lg:px-0 space-y-8 lg:sticky lg:bottom-8 lg:self-end">
                         <SheikhProfileCard />
 
                         {/* Related Sermons */}
