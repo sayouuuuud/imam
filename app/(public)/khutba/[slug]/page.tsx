@@ -221,9 +221,9 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Main Content */}
-                    <div className="lg:col-span-8 space-y-8">
+                    <div className="lg:col-span-8 space-y-0 md:space-y-8">
                         {/* Sermon Header Card */}
-                        <div className="bg-card rounded-none md:rounded-2xl p-6 md:p-8 border-0 md:border border-border shadow-sm relative overflow-hidden">
+                        <div className="bg-card rounded-none md:rounded-2xl p-6 md:p-8 border-b md:border border-border shadow-none md:shadow-sm relative overflow-hidden">
                             <span className="material-icons-outlined absolute -left-10 -top-10 text-9xl text-gray-50 dark:text-gray-800/30 opacity-50 transform rotate-12">menu_book</span>
                             <div className="relative z-10">
                                 <div className="flex flex-wrap gap-2 mb-4">
@@ -265,7 +265,7 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
                         {sermon.content && (
                             <article
                                 id="sermon-content"
-                                className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-serif prose-p:text-foreground max-w-none bg-card p-6 md:p-12 rounded-none md:rounded-2xl border-0 md:border border-border shadow-sm prose-blockquote:border-r-4 prose-blockquote:border-secondary prose-blockquote:bg-secondary/5 prose-blockquote:text-foreground prose-blockquote:font-serif prose-blockquote:text-xl prose-blockquote:leading-relaxed prose-blockquote:p-4 prose-blockquote:rounded-l-lg prose-blockquote:not-italic prose-blockquote:my-8 prose-strong:text-foreground prose-strong:font-bold prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-li:mb-1 prose-a:text-primary prose-a:underline hover:prose-a:no-underline [&_.quran-verse]:text-foreground [&_.quran-verse_p]:text-foreground [&_.quran-verse_footer]:text-muted-foreground overflow-x-hidden break-words [overflow-wrap:anywhere]"
+                                className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-serif prose-p:text-foreground max-w-none bg-card p-6 md:p-12 rounded-none md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm prose-blockquote:border-r-4 prose-blockquote:border-secondary prose-blockquote:bg-secondary/5 prose-blockquote:text-foreground prose-blockquote:font-serif prose-blockquote:text-xl prose-blockquote:leading-relaxed prose-blockquote:p-4 prose-blockquote:rounded-l-lg prose-blockquote:not-italic prose-blockquote:my-8 prose-strong:text-foreground prose-strong:font-bold prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-li:mb-1 prose-a:text-primary prose-a:underline hover:prose-a:no-underline [&_.quran-verse]:text-foreground [&_.quran-verse_p]:text-foreground [&_.quran-verse_footer]:text-muted-foreground overflow-x-hidden break-words [overflow-wrap:anywhere]"
                             >
                                 <SafeHtml html={sermon.content} />
                             </article>
