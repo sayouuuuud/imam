@@ -109,7 +109,7 @@ export default async function BooksPage({
   const totalPages = Math.ceil((count || 0) / itemsPerPage)
 
   return (
-    <>
+    <div className="min-h-screen bg-background">
       <JsonLd schema={await generateItemListSchema(
         "الكتب والمؤلفات - الشيخ السيد مراد",
         "/books",
@@ -122,12 +122,12 @@ export default async function BooksPage({
         }))
       )} />
       {/* Hero Section */}
-      <section className="py-12">
+      <section className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="inline-block bg-accent text-secondary px-3 py-1 rounded-full text-sm mb-4 border border-secondary/20 shadow-sm">
             المكتبة العلمية
           </span>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 font-serif">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             الكتب والمؤلفات
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg leading-relaxed">
@@ -291,8 +291,7 @@ export default async function BooksPage({
             </div>
           </div>
         </div>
-
       </main>
-    </>
+    </div>
   )
 }

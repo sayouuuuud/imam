@@ -137,7 +137,8 @@ export default async function VideoDetailPage({ params }: PageProps) {
     title: video.title,
     description: video.description ? stripHtml(video.description) : video.title,
     uploadDate: video.created_at,
-    thumbnailUrl: thumbnailUrl.startsWith('http') ? thumbnailUrl : `https://elsayed-mourad.online${thumbnailUrl}`,
+    url: `/videos/${video.id}`,
+    thumbnail: thumbnailUrl.startsWith('http') ? thumbnailUrl : `https://elsayed-mourad.online${thumbnailUrl}`,
     contentUrl: video.source !== "youtube" && video.url ? (video.url.startsWith('http') ? video.url : `https://elsayed-mourad.online${video.url}`) : undefined,
     embedUrl: video.source === "youtube" && videoId ? `https://www.youtube.com/embed/${videoId}` : undefined,
     duration: formatDurationToISO(video.duration),
@@ -150,7 +151,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
   ])
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
       <JsonLd schema={[videoSchema, breadcrumbSchema]} />
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
@@ -202,7 +203,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
             {/* Video Info */}
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-4 leading-tight">
                   {video.title}
                 </h1>
 
@@ -236,7 +237,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
                   <h3 className="font-bold text-foreground mb-4 text-lg">
                     وصف الفيديو
                   </h3>
-                  <div className="prose prose-lg max-w-none dark:prose-invert">
+                  <div className="prose prose-lg dark:prose-invert prose-p:font-body prose-p:text-foreground/90 max-w-none">
                     <SafeHtml html={video.description} />
                   </div>
                 </div>

@@ -135,7 +135,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
-      <div className="container mx-auto px-4 lg:px-8 py-10 min-h-screen">
+      <div className="container mx-auto px-0 md:px-4 lg:px-8 py-10 min-h-screen">
         <JsonLd schema={[articleSchema, breadcrumbSchema]} />
         <style>{`
           @media print {
@@ -163,7 +163,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
           }
         `}</style>
 
-        <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-8 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <nav className="px-4 md:px-0 flex items-center text-sm text-gray-500 dark:text-gray-400 mb-8 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <Link href="/" className="hover:text-primary dark:hover:text-secondary">الرئيسية</Link>
           <ChevronLeft className="h-4 w-4 mx-2 text-gray-400" />
           <Link href="/articles" className="hover:text-primary dark:hover:text-secondary">المقالات</Link>
@@ -174,13 +174,15 @@ export default async function ArticleDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8 space-y-0 md:space-y-8">
             {primaryImageUrl && (
-              <div className="mb-8 rounded-2xl overflow-hidden shadow-lg">
-                <img
-                  src={primaryImageUrl}
-                  alt={article.title}
-                  className="w-full h-96 object-cover"
-                  loading="lazy"
-                />
+              <div className="px-4 md:px-0 mb-8">
+                <div className="rounded-2xl overflow-hidden shadow-lg">
+                  <img
+                    src={primaryImageUrl}
+                    alt={article.title}
+                    className="w-full h-96 object-cover"
+                    loading="lazy"
+                  />
+                </div>
               </div>
             )}
 
@@ -194,12 +196,11 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                     {formatDate(article.created_at)}
                   </span>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold font-serif text-foreground mb-6 leading-tight">
+                <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-6 leading-tight">
                   {article.title}
                 </h1>
                 <div className="flex items-center gap-4 mb-6">
                   <span className="text-muted-foreground text-sm">بقلم: {article.author}</span>
-                  <span className="text-muted-foreground text-sm">وقت القراءة: {article.read_time || 5} دقائق</span>
                 </div>
 
                 {/* Interactions Client Component */}
@@ -212,18 +213,11 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               id="article-content"
               className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-body prose-p:text-foreground max-w-none bg-card p-6 md:p-12 rounded-none md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm"
             >
-              <h1 className="text-3xl md:text-4xl font-bold font-serif text-foreground mb-6 leading-tight">
-                {article.title}
-              </h1>
-              <div className="flex items-center gap-4 mb-6 text-muted-foreground text-sm">
-                <span>بقلم: {article.author}</span>
-                <span>وقت القراءة: {article.read_time || 5} دقائق</span>
-              </div>
               <SafeHtml html={article.content} />
             </article>
 
             {article.tags && article.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="px-4 md:px-0 flex flex-wrap gap-2">
                 {article.tags.map((tag: string, index: number) => (
                   <a key={index} className="px-4 py-2 bg-muted hover:bg-accent text-muted-foreground hover:text-accent-foreground rounded-lg text-sm transition-colors border border-border" href="#">
                     #{tag}
@@ -233,7 +227,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          <div className="lg:col-span-4 space-y-8 lg:sticky lg:bottom-8 lg:self-end">
+          <div className="lg:col-span-4 px-4 lg:px-0 space-y-8 lg:sticky lg:bottom-8 lg:self-end">
             <SheikhProfileCard />
 
             {relatedArticles.length > 0 && (

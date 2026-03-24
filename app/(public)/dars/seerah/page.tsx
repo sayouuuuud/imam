@@ -17,7 +17,9 @@ export default async function SeerahLessonsPage() {
     .eq("lesson_type", "seerah")
     .order("created_at", { ascending: false })
     .limit(8)
-  return (<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  return (
+    <div className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     {/* Breadcrumb */} <nav className="flex items-center text-sm text-text-muted mb-8">
       <Link href="/" className="hover:text-primary">
         الرئيسية </Link>
@@ -33,7 +35,7 @@ export default async function SeerahLessonsPage() {
       <div className="w-16 h-16 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600 mx-auto mb-4">
         <History className="h-8 w-8" />
       </div>
-      <h1 className="text-4xl md:text-5xl font-extrabold text-primary mb-6 font-serif">
+      <h1 className="text-4xl md:text-5xl font-extrabold text-primary mb-6 font-display">
         دروس السيرة النبوية </h1>
       <p className="text-lg text-text-muted max-w-2xl mx-auto leading-relaxed">
         وقفات تربوية مع أحداث السيرة النبوية العطرة، واستخلاص الدروس والعبر منها. </p>
@@ -65,7 +67,7 @@ export default async function SeerahLessonsPage() {
             {lesson.type === "video" ? <Play className="h-5 w-5" />
               : <Headphones className="h-5 w-5" />
             } </div>
-          <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+          <h3 className="text-xl font-bold font-display text-foreground mb-2 group-hover:text-primary transition-colors">
             {lesson.title} </h3>
           <div className="flex items-center justify-between pt-4 border-t border-border">
             <div className="flex items-center gap-2 text-xs text-text-muted">
@@ -82,6 +84,6 @@ export default async function SeerahLessonsPage() {
       ))} </div>
 
     )} </main>
-
+    </div>
   )
 }

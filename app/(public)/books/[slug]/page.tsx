@@ -198,7 +198,8 @@ export default async function BookDetailPage({ params }: PageProps) {
     ])
 
     return (
-        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
+            <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             <JsonLd schema={[bookSchema, breadcrumbSchema]} />
             {/* Breadcrumb */}
             <nav aria-label="Breadcrumb" className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-8 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -242,7 +243,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                             </span>
                         </div>
 
-                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-5 leading-tight">
+                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display text-foreground mb-5 leading-tight">
                             {book.title}
                         </h1>
 
@@ -317,9 +318,9 @@ export default async function BookDetailPage({ params }: PageProps) {
                             <span className="material-icons-outlined text-primary text-3xl">description</span>
                             نبذة عن الكتاب
                         </h3>
-                        <div className="prose dark:prose-invert max-w-none">
+                        <div className="prose dark:prose-invert prose-p:font-body prose-p:text-foreground/90 max-w-none">
                             <div
-                                className="leading-relaxed text-lg text-foreground"
+                                className="leading-relaxed text-lg"
                                 dangerouslySetInnerHTML={{ __html: book.description }}
                             />
                         </div>
@@ -376,6 +377,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                     </div>
                 </div>
             )}
-        </main>
+            </main>
+        </div>
     )
 }

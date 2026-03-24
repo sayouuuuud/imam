@@ -143,7 +143,7 @@ export default async function DarsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
       <JsonLd schema={await generateItemListSchema(
         "الدروس العلمية - الشيخ السيد مراد",
         "/dars",
@@ -164,7 +164,7 @@ export default async function DarsPage() {
         <span className="text-sm font-semibold text-primary/80 bg-primary/5 px-4 py-1.5 rounded-full inline-block mb-4">
           العلم الشرعي
         </span>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-primary mb-6 relative inline-block font-serif">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-primary mb-6 relative inline-block font-display">
           جداول الدروس العلمية
           <div className="absolute -bottom-2 left-0 w-full h-2 bg-secondary/30 -z-10 rounded-full"></div>
         </h1>
@@ -183,7 +183,7 @@ export default async function DarsPage() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-foreground font-serif">
+                <h2 className="text-2xl font-bold text-foreground font-display">
                   دروس الفقه
                 </h2>
                 <p className="text-sm text-text-muted">
@@ -220,7 +220,7 @@ export default async function DarsPage() {
                     <span className="text-xs font-bold text-primary uppercase tracking-wider mb-2 block">
                       درس الأسبوع
                     </span>
-                    <h3 className="text-3xl font-extrabold text-primary mb-3 leading-tight font-serif">
+                    <h3 className="text-3xl font-extrabold text-primary mb-3 leading-tight font-display">
                       {featuredFiqh.title}
                     </h3>
                   </div>
@@ -303,7 +303,7 @@ export default async function DarsPage() {
                 <History className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-foreground font-serif">
+                <h2 className="text-2xl font-bold text-foreground font-display">
                   دروس السيرة النبوية
                 </h2>
                 <p className="text-sm text-text-muted">
@@ -340,7 +340,7 @@ export default async function DarsPage() {
                     <span className="text-xs font-bold text-primary uppercase tracking-wider mb-2 block">
                       درس الأسبوع
                     </span>
-                    <h3 className="text-3xl font-extrabold text-primary mb-3 leading-tight font-serif">
+                    <h3 className="text-3xl font-extrabold text-primary mb-3 leading-tight font-display">
                       {featuredSeerah.title}
                     </h3>
                   </div>
@@ -424,7 +424,7 @@ export default async function DarsPage() {
                   <School className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground font-serif">
+                  <h2 className="text-2xl font-bold text-foreground font-display">
                     دروس متنوعة
                   </h2>
                   <p className="text-sm text-text-muted">

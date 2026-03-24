@@ -74,9 +74,9 @@ export default async function KhutbaPage({
   const { data: sermons, count } = await query
   const totalPages = Math.ceil((count || 0) / itemsPerPage)
 
-  return (
-    <>
-      <JsonLd schema={await generateItemListSchema(
+    return (
+    <div className="min-h-screen bg-background">
+            <JsonLd schema={await generateItemListSchema(
         "الخطب المنبرية - الشيخ السيد مراد",
         "/khutba",
         "مجموعة متكاملة من خطب الجمعة والأعياد والمناسبات الدينية",
@@ -88,14 +88,14 @@ export default async function KhutbaPage({
         }))
       )} />
       {/* Hero Section */}
-      <section className="bg-accent-light py-12">
+      <section className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="inline-block bg-surface text-secondary px-3 py-1 rounded-full text-sm mb-4 border border-secondary/20 shadow-sm">
             مكتبة المنبر
           </span>
-          <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4 font-serif">
-            الخطب المنبرية
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
+                        الخطب المنبرية
+                    </h1>
           <p className="text-text-muted max-w-2xl mx-auto text-lg leading-relaxed">
             مجموعة متكاملة من خطب الجمعة والأعياد والمناسبات الدينية، مرتبة
             ومؤرشفة للرجوع إليها في أي وقت.
@@ -213,9 +213,9 @@ export default async function KhutbaPage({
                       <span>{sermon.category}</span>
                     </div>
                   )}
-                  <h3 className="text-xl font-bold text-primary mb-3 line-clamp-2 hover:text-secondary transition-colors cursor-pointer">
-                    {sermon.title}
-                  </h3>
+                                    <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors cursor-pointer">
+                                        {sermon.title}
+                                    </h3>
 
                   {sermon.description && (
                     <div className="text-sm text-text-muted mb-4 line-clamp-3">
@@ -294,7 +294,7 @@ export default async function KhutbaPage({
             </nav>
           </div>
         )}
-      </main>
-    </>
-  )
+            </main>
+        </div>
+    )
 }

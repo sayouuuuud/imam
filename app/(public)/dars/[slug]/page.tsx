@@ -214,7 +214,7 @@ export default async function DarsDetailPage({ params }: PageProps) {
     ])
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
             <JsonLd schema={[articleSchema, breadcrumbSchema, ...(mediaSchema ? [mediaSchema] : [])]} />
             <div className="max-w-6xl mx-auto px-4 py-12">
                 <style>{`
@@ -270,7 +270,7 @@ export default async function DarsDetailPage({ params }: PageProps) {
                         )}
 
                         <div className="mb-8">
-                            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 font-serif leading-tight">
+                            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 font-display leading-tight">
                                 {lesson.title}
                             </h1>
 
