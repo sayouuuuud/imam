@@ -1,6 +1,3 @@
--- Ensuring all content tables have updated_at columns for better sitemap accuracy
--- This script also adds a trigger to automatically update the updated_at column on row update
-
 -- 1. Create a function to handle updating the timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

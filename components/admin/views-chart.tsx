@@ -28,7 +28,6 @@ export function ViewsChart({ data, period: externalPeriod, onPeriodChange }: Vie
 
     // Filter data based on period
 
-
     // Generate chart data from props or return empty structure for zero state
     // Generate chart data ensuring all days in the period are represented
     const totalDays = period === "آخر 7 أيام" ? 7 : period === "آخر 30 يوم" ? 30 : 90

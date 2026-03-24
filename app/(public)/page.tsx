@@ -6,7 +6,7 @@ import { LatestContent } from "@/components/home/latest-lessons"
 import { WeeklySchedule } from "@/components/home/weekly-schedule"
 import { ExploreSections } from "@/components/home/explore-sections"
 import { FeaturedBooks } from "@/components/home/featured-books"
-import { RamadanDecorations } from "@/components/home/ramadan-decorations"
+
 import { LatestSermons } from "@/components/home/latest-sermons"
 import { LatestVideos } from "@/components/home/latest-videos"
 import { NewsletterSection } from "@/components/home/newsletter-section"
@@ -266,7 +266,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <RamadanDecorations />
+
       <ScrollAnimation>
         <HeroSection data={heroData} />
       </ScrollAnimation>
