@@ -66,7 +66,7 @@ export function SheikhProfileCard() {
 
 
     return (
-        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm text-center">
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-border shadow-sm text-center">
             <div className="w-24 h-24 mx-auto rounded-full bg-gray-200 dark:bg-gray-700 mb-4 overflow-hidden border-4 border-white dark:border-gray-600 shadow-lg">
                 <img
                     alt={name}

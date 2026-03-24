@@ -35,6 +35,7 @@ const TEXT_COLORS = [{ name: "أسود", value: "#000000" }, { name: "أبيض",
 const FONT_FAMILIES = [
   { name: "Cairo", value: '"Cairo", sans-serif' },
   { name: "Amiri", value: '"Amiri", serif' },
+  { name: "Noto Naskh Arabic", value: 'var(--font-noto-naskh), "Noto Naskh Arabic", serif' },
 ]
 
 const FONT_SIZES = [
@@ -68,7 +69,7 @@ const OrnamentDivider = Node.create({
   },
 })
 
-export function RichTextEditor({ content, onChange, onFontChange, defaultFont = 'Cairo', placeholder }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange, onFontChange, defaultFont = 'Noto Naskh Arabic', placeholder }: RichTextEditorProps) {
   const isInitialMount = useRef(true)
   const lastContent = useRef(content)
   const [selectedFont, setSelectedFont] = useState(defaultFont)

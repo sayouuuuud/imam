@@ -191,11 +191,12 @@ export function SafeHtml({ html, className="", as: Tag = "div" }: SafeHtmlProps)
     const styledHtml = `
       <style>
         .prose-content {
-          line-height: 1.7;
-          color: inherit;
+          font-family: 'Noto Naskh Arabic', serif;
+          font-size: 20px;
+          line-height: 2;
+          direction: rtl;
         }
         .prose-content h2, .prose-content h3, .prose-content h4 {
-          color: inherit;
           margin-top: 2rem;
           margin-bottom: 1rem;
           font-weight: bold;
@@ -351,6 +352,7 @@ export function SafeHtml({ html, className="", as: Tag = "div" }: SafeHtmlProps)
             "lang"
           ]
         })
+        DOMPurify.removeHook('afterSanitizeAttributes')
         setSanitizedHtml(cleanHtml)
       } catch (error) {
         console.warn('DOMPurify failed, using basic HTML:', error)

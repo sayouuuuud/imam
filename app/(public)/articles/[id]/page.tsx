@@ -134,7 +134,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
   ])
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-display antialiased transition-colors duration-300">
+    <div className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
       <div className="container mx-auto px-4 lg:px-8 py-10 min-h-screen">
         <JsonLd schema={[articleSchema, breadcrumbSchema]} />
         <style>{`
@@ -184,17 +184,17 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            <div className="bg-card-light dark:bg-card-dark rounded-2xl p-8 border border-border-light dark:border-border-dark shadow-sm relative overflow-hidden">
+            <div className="bg-card rounded-2xl p-8 border border-border shadow-sm relative overflow-hidden">
               <span className="material-icons-outlined absolute -left-10 -top-10 text-9xl text-gray-50 dark:text-gray-800/30 opacity-50 transform rotate-12">article</span>
               <div className="relative z-10">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="px-3 py-1 bg-secondary/10 text-secondary text-xs rounded-full font-medium border border-secondary/20">مقالة</span>
+                  <span className="px-3 py-1 text-xs rounded-full font-medium border" style={{backgroundColor: '#fdf4dc', color: '#b58842', borderColor: '#d4af37'}}>مقالة</span>
                   <span className="px-3 py-1 bg-muted text-muted-foreground text-xs rounded-full flex items-center gap-1">
                     <CalendarDays className="h-3 w-3" />
                     {formatDate(article.created_at)}
                   </span>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold font-serif text-foreground mb-6 leading-tight">
+                <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-6 leading-tight">
                   {article.title}
                 </h1>
                 <div className="flex items-center gap-4 mb-6">
@@ -210,9 +210,9 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
             <article
               id="article-content"
-              className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-body prose-p:text-foreground max-w-none bg-card-light dark:bg-card-dark p-8 md:p-12 rounded-2xl border border-border-light dark:border-border-dark shadow-sm"
+              className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-body prose-p:text-foreground max-w-none bg-card p-8 md:p-12 rounded-2xl border border-border shadow-sm"
             >
-              <h1 className="text-3xl md:text-4xl font-bold font-serif text-foreground mb-6 leading-tight">
+              <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-6 leading-tight">
                 {article.title}
               </h1>
               <div className="flex items-center gap-4 mb-6 text-muted-foreground text-sm">
@@ -233,11 +233,11 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          <div className="lg:col-span-4 space-y-8">
+          <div className="lg:col-span-4 space-y-8 lg:sticky lg:bottom-8 lg:self-end">
             <SheikhProfileCard />
 
             {relatedArticles.length > 0 && (
-              <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm">
+              <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-bold text-lg text-card-foreground flex items-center gap-2">
                     <span className="w-1 h-6 bg-primary rounded-full"></span>

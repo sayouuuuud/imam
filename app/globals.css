@@ -1,5 +1,6 @@
 @layer theme, base, components, utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap');
 @import "tailwindcss";
 /* @import "tw-animate-css"; */
 
@@ -12,6 +13,8 @@
   /* Fonts */
   --font-sans: var(--font-cairo), "Cairo", sans-serif;
   --font-serif: var(--font-amiri), "Amiri", serif;
+  --font-naskh: var(--font-noto-naskh), "Noto Naskh Arabic", "Droid Arabic Naskh", serif;
+  --font-display: var(--font-cairo), "Cairo", sans-serif;
 
   /* ========== BRAND COLORS (Consistent across modes) ========== */
   --color-primary: #035d44;
@@ -461,4 +464,17 @@ td [data-slot="switch"] {
 /* Pause on hover for better readability */
 .animate-scroll:hover {
   animation-play-state: paused;
+}
+
+/* ========== BG PATTERN UTILITIES ========== */
+.bg-pattern {
+  background-image: url('/pattern-light.png');
+  background-repeat: repeat;
+  background-size: 100px 100px;
+}
+
+.dark .bg-pattern {
+  background-image: url('/pattern-dark.png');
+  background-repeat: repeat;
+  background-size: 100px 100px;
 }

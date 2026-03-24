@@ -1,7 +1,7 @@
 import "./globals.css"
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Amiri, Cairo } from "next/font/google"
+import { Noto_Naskh_Arabic, Amiri, Cairo } from "next/font/google"
 import { AuthProvider } from "@/contexts/auth-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import Script from 'next/script'
@@ -26,6 +26,13 @@ const cairo = Cairo({
   subsets: ["arabic", "latin"],
   weight: ["400", "600", "700"],
   variable: "--font-cairo",
+  display: "swap",
+})
+
+const notoNaskhArabic = Noto_Naskh_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-noto-naskh",
   display: "swap",
 })
 
@@ -154,7 +161,7 @@ export default async function RootLayout({
       lang="ar"
       dir="rtl"
       suppressHydrationWarning
-      className={`${amiri.variable} ${cairo.variable}`}
+      className={`${amiri.variable} ${cairo.variable} ${notoNaskhArabic.variable}`}
     >
       <head>
         {/* Optimize Font Loading */}

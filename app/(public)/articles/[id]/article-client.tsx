@@ -49,7 +49,7 @@ export default function ArticleClient({
       )}
 
       {/* Article Content */}
-      <article className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-body max-w-none bg-card-light dark:bg-card-dark p-8 md:p-12 rounded-2xl border border-border-light dark:border-border-dark shadow-sm">
+      <article className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-body max-w-none bg-card p-8 md:p-12 rounded-2xl border border-border shadow-sm">
         <h3 className="flex items-center gap-2">
           <span className="w-1 h-8 bg-secondary rounded-full"></span>
           مقدمة المقال
@@ -133,7 +133,7 @@ export default function ArticleClient({
       {/* Sidebar */}
       <div className="lg:col-span-4 space-y-8">
         {/* Author Card */}
-        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm text-center">
+        <div className="bg-card rounded-xl p-6 border border-border shadow-sm text-center">
           <div className="w-24 h-24 mx-auto rounded-full bg-gray-200 dark:bg-gray-700 mb-4 overflow-hidden border-4 border-white dark:border-gray-600 shadow-lg">
             <img
               alt="صورة الكاتب"
@@ -153,7 +153,7 @@ export default function ArticleClient({
         </div>
 
         {/* Related Articles */}
-        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm">
+        <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-lg text-card-foreground flex items-center gap-2">
               <span className="w-1 h-6 bg-primary rounded-full"></span>
@@ -274,7 +274,7 @@ export default function ArticleClient({
       )}
 
       {/* Article Content */}
-      <article className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-body max-w-none bg-card-light dark:bg-card-dark p-8 md:p-12 rounded-2xl border border-border-light dark:border-border-dark shadow-sm">
+      <article className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-body max-w-none bg-card p-8 md:p-12 rounded-2xl border border-border shadow-sm">
         <h3 className="flex items-center gap-2">
           <span className="w-1 h-8 bg-secondary rounded-full"></span>
           مقدمة المقال
@@ -358,7 +358,7 @@ export default function ArticleClient({
       {/* Sidebar */}
       <div className="lg:col-span-4 space-y-8">
         {/* Author Card */}
-        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm text-center">
+        <div className="bg-card rounded-xl p-6 border border-border shadow-sm text-center">
           <div className="w-24 h-24 mx-auto rounded-full bg-gray-200 dark:bg-gray-700 mb-4 overflow-hidden border-4 border-white dark:border-gray-600 shadow-lg">
             <img
               alt="صورة الكاتب"
@@ -378,7 +378,7 @@ export default function ArticleClient({
         </div>
 
         {/* Related Articles */}
-        <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-border-light dark:border-border-dark shadow-sm">
+        <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-lg text-card-foreground flex items-center gap-2">
               <span className="w-1 h-6 bg-primary rounded-full"></span>
