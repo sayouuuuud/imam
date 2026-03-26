@@ -4,6 +4,7 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { stripHtml } from "@/lib/utils/strip-html"
 import { BookCoverImage } from "@/components/book-cover-image"
+import { ArrowLeft, Download, Eye } from "lucide-react"
 
 interface Book {
   id: string
@@ -59,8 +60,7 @@ export function FeaturedBooks({ books }: FeaturedBooksProps) {
         </div>
 
         <Link href="/books" className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-primary bg-card px-4 py-2 rounded-lg text-sm border border-border transition-all duration-300 hover:shadow-md" >
-          عرض كل المؤلفات <span className="material-icons-outlined text-sm rtl-flip">
-            arrow_right_alt</span>
+          عرض كل المؤلفات <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
         </Link>
 
       </div>
@@ -103,15 +103,13 @@ export function FeaturedBooks({ books }: FeaturedBooksProps) {
               <div className="flex items-center justify-between mt-auto pt-4">
                 {book.pdf_file_path ? (<a href={`/api/books/${book.id}/pdf?download=1`} download onClick={() =>
                   handleDownload(book.id, book.download_count)}
-                  className="text-primary text-sm flex items-center gap-1 font-medium hover:underline transition-all duration-300" > <span className="material-icons-outlined text-sm">
-                    download</span>
+                  className="text-primary text-sm flex items-center gap-1 font-medium hover:underline transition-all duration-300" > <Download className="w-4 h-4" />
 
                   تحميل </a>
 
                 ) : (<Link href={`/books/${book.id}`}
                   className="text-primary text-sm flex items-center gap-1 font-medium hover:underline transition-all duration-300" >
-                  <span className="material-icons-outlined text-sm">
-                    visibility</span>
+                  <Eye className="w-4 h-4" />
 
                   عرض </Link>
 

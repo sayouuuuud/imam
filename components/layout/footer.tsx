@@ -4,6 +4,7 @@ import type React from "react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { Landmark, Facebook, Youtube, Send } from "lucide-react"
 
 // Helper function to resolve preview src
 const resolvePreviewSrc = (value: string) => {
@@ -195,7 +196,7 @@ export function Footer() {
                 />
               ) : (
                 <div className="bg-primary text-white p-2 rounded-lg">
-                  <span className="material-icons-outlined text-2xl">mosque</span>
+                  <Landmark className="w-6 h-6" />
                 </div>
               )}
             </div>
@@ -204,20 +205,17 @@ export function Footer() {
             <div className="flex gap-4">
               {settings.facebook_page && (<a href={settings.facebook_page}
                 target="_blank" rel="noopener noreferrer" className="text-text-muted hover:text-primary transition-colors" >
-                <span className="material-icons-outlined text-xl">
-                  facebook</span>
+                <Facebook className="w-5 h-5" />
               </a>
 
               )} {settings.youtube_channel && (<a href={settings.youtube_channel}
                 target="_blank" rel="noopener noreferrer" className="text-text-muted hover:text-red-500 transition-colors" >
-                <span className="material-icons-outlined text-xl">
-                  smart_display</span>
+                <Youtube className="w-5 h-5" />
               </a>
 
               )} {settings.telegram_channel && (<a href={settings.telegram_channel}
                 target="_blank" rel="noopener noreferrer" className="text-text-muted hover:text-sky-500 transition-colors" >
-                <span className="material-icons-outlined text-xl">
-                  send</span>
+                <Send className="w-5 h-5" />
               </a>
 
               )} </div>

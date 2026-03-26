@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Calendar, Clock, CalendarOff, ChevronLeft, CalendarDays, ArrowLeft } from "lucide-react"
 
 interface ScheduleItem {
   id: string
@@ -46,12 +47,12 @@ export function WeeklySchedule({ schedule }: WeeklyScheduleProps) {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <span className="bg-primary/10 text-primary p-2.5 rounded-xl border border-primary/20">
-            <span className="material-icons-outlined text-xl">calendar_today</span>
+            <Calendar className="text-xl w-5 h-5" />
           </span>
           <h3 className="text-2xl font-bold font-serif text-foreground" >جدول الدروس الأسبوعية</h3>
         </div>
         <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted bg-muted/50 border border-border/50 px-3 py-1 rounded-full flex items-center gap-1.5">
-          <span className="material-icons-outlined text-[12px] text-secondary">schedule</span>
+          <Clock className="text-[12px] text-secondary w-3 h-3" />
           بتوقيت القاهرة
         </span>
       </div>
@@ -60,7 +61,7 @@ export function WeeklySchedule({ schedule }: WeeklyScheduleProps) {
       <div className="bg-card/50 dark:bg-card/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-border/60 dark:border-border/30 hover:border-primary/30 shadow hover:shadow-lg transition-all duration-500 space-y-4 sm:space-y-5">
         {schedule.length === 0 ? (
           <div className="text-center py-12">
-            <span className="material-icons-outlined text-5xl text-text-muted/30 mb-4">event_busy</span>
+            <CalendarOff className="text-5xl w-12 h-12 text-text-muted/30 mb-4" />
             <p className="text-text-muted">لا يوجد جدول حالياً</p>
           </div>
         ) : (
@@ -99,7 +100,7 @@ export function WeeklySchedule({ schedule }: WeeklyScheduleProps) {
 
                   {/* Arrow - Subtle */}
                   <div className="hidden sm:flex items-center self-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-                    <span className="material-icons-outlined text-primary/40 text-lg">chevron_left</span>
+                    <ChevronLeft className="text-primary/40 w-5 h-5" />
                   </div>
                 </div>
               </div>
@@ -112,9 +113,9 @@ export function WeeklySchedule({ schedule }: WeeklyScheduleProps) {
             href="/schedule"
             className="flex items-center justify-center gap-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/10 py-3 rounded-xl transition-all duration-300"
           >
-            <span className="material-icons-outlined text-sm">calendar_month</span>
+            <CalendarDays className="w-4 h-4" />
             عرض الجدول الشهري الكامل
-            <span className="material-icons-outlined text-sm rtl-flip">arrow_back</span>
+            <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
           </Link>
         </div>
       </div>

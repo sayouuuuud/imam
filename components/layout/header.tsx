@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { Search, Bell, Menu, X } from "lucide-react"
 
 // Helper function to resolve preview src
 const resolvePreviewSrc = (value: string) => {
@@ -275,20 +276,19 @@ export function Header({ initialLogo, initialDarkLogo, initialNavLinks }: Header
             {/* Actions (Left) */} <div className="flex items-center gap-2">
               <button onClick={() =>
                 setSearchOpen(true)}
-                className="p-2 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-all" aria-label="بحث" > <span className="material-icons-outlined flex flex-col">
-                  search</span>
+                className="p-2 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-all" aria-label="بحث" >
+                <Search className="h-5 w-5" />
               </button>
 
               <ThemeToggle />
               <Link href="/subscribe" className="hidden sm:flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground px-5 py-2 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg" >
-                <span className="material-icons-outlined text-sm">
-                  notifications</span>
-
-                اشترك </Link>
+                <Bell className="h-4 w-4" />
+                اشترك
+              </Link>
 
               {/* Mobile menu button */} <button className="lg:hidden text-muted-foreground p-2 hover:bg-muted rounded-lg transition-colors" onClick={() =>
-                setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? "إغلاق القائمة" : "فتح القائمة"} > <span className="material-icons-outlined">
-                  {mobileMenuOpen ? "close" : "menu"}</span>
+                setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? "إغلاق القائمة" : "فتح القائمة"} >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
 
             </div>
@@ -321,8 +321,7 @@ export function Header({ initialLogo, initialDarkLogo, initialNavLinks }: Header
               onChange={(e) =>
                 setSearchQuery(e.target.value)}
               placeholder="ابحث في الخطب، الدروس، المقالات، والكتب..." className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" autoFocus /> <button type="submit" className="bg-primary hover:bg-primary-hover text-primary-foreground px-6 rounded-xl transition-colors flex items-center gap-2" >
-              <span className="material-icons-outlined">
-                search</span>
+              <Search className="h-5 w-5" />
             </button>
 
           </form>

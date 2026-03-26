@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { ar } from "date-fns/locale"
+import { ArrowLeft, BookOpen, Clock } from "lucide-react"
 
 interface Sermon {
     id: string
@@ -47,7 +48,7 @@ export function LatestSermons({ sermons }: LatestSermonsProps) {
                         className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-primary bg-card px-4 py-2 rounded-lg text-sm border border-border transition-all duration-300 hover:shadow-md"
                     >
                         عرض كل الخطب
-                        <span className="material-icons-outlined text-sm rtl-flip">arrow_right_alt</span>
+                        <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
                     </Link>
                 </div>
 
@@ -61,7 +62,7 @@ export function LatestSermons({ sermons }: LatestSermonsProps) {
                                     {/* Icon Header */}
                                     <div className="aspect-video bg-primary/10 relative overflow-hidden flex items-center justify-center">
                                         <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                                            <span className="material-icons-outlined text-5xl text-primary">menu_book</span>
+                                            <BookOpen className="text-5xl w-12 h-12 text-primary" />
                                         </div>
                                     </div>
 
@@ -82,7 +83,7 @@ export function LatestSermons({ sermons }: LatestSermonsProps) {
                                         {/* Date */}
                                         <div className="mt-3 pt-3 border-t border-border">
                                             <span className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
-                                                <span className="material-icons-outlined text-sm">schedule</span>
+                                                <Clock className="w-4 h-4" />
                                                 {formatDistanceToNow(new Date(sermon.created_at), { addSuffix: true, locale: ar })}
                                             </span>
                                         </div>

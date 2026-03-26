@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { createPublicClient } from "@/lib/supabase/public"
+import { BookOpen, PlayCircle, Eye } from "lucide-react"
 
 interface HeroData {
   hadith_text: string | null
@@ -167,7 +168,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
 
               {/* Source - from database */}
               <p className="text-sm text-secondary font-medium flex items-center justify-center lg:justify-start gap-2">
-                <span className="material-icons-outlined text-sm">format_quote</span>
+                <svg className="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/></svg>
                 {heroData.hadith_translation}
               </p>
 
@@ -177,18 +178,14 @@ export async function HeroSection({ data }: HeroSectionProps) {
                   href={heroData.hadith_button_link}
                   className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-medium group"
                 >
-                  <span className="material-icons-outlined text-xl group-hover:scale-110 transition-transform">
-                    menu_book
-                  </span>
+                  <BookOpen className="text-xl w-5 h-5 group-hover:scale-110 transition-transform" />
                   {heroData.hadith_button_text}
                 </Link>
                 <Link
                   href="/dars"
                   className="flex items-center gap-2 bg-card border border-border text-card-foreground px-8 py-3.5 rounded-xl hover:bg-accent transition-all duration-300 shadow-sm hover:shadow-md text-lg font-medium group"
                 >
-                  <span className="material-icons-outlined text-xl group-hover:scale-110 transition-transform">
-                    play_circle
-                  </span>
+                  <PlayCircle className="text-xl w-5 h-5 group-hover:scale-110 transition-transform" />
                   استمع للدرس
                 </Link>
               </div>
@@ -231,9 +228,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
                   href={featuredBook ? `/books/${featuredBook.id}` : heroData.button_link}
                   className="mt-4 flex items-center justify-center gap-2 text-primary dark:text-secondary font-medium cursor-pointer hover:underline py-2 group/link"
                 >
-                  <span className="material-icons-outlined text-sm group-hover/link:scale-110 transition-transform">
-                    visibility
-                  </span>
+                  <Eye className="text-sm w-4 h-4 group-hover/link:scale-110 transition-transform" />
                   <span className="text-sm">{heroData.book_button_text}</span>
                 </Link>
               </div>

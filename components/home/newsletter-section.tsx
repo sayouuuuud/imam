@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { Users, Phone, Send } from "lucide-react"
 
 export function NewsletterSection() {
   const [whatsapp, setWhatsapp] = useState("")
@@ -60,8 +61,7 @@ export function NewsletterSection() {
 
  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
 <div className="inline-flex items-center gap-2 bg-primary/20 dark:bg-primary/30 px-3 py-1 rounded-full text-xs font-medium mb-4 backdrop-blur-sm text-primary-foreground">
-  <span className="material-icons-outlined text-sm">
-    group</span>
+  <Users className="w-4 h-4" />
   <span>
     انضم للمجموعة</span>
 </div>
@@ -77,8 +77,7 @@ className="space-y-4 max-w-md mx-auto">
 أدخل رقم الواتساب أو معرف التليجرام (أحدهما فقط كافٍ)</p>
 <div className="relative">
  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">
-<span className="material-icons-outlined text-lg">
-phone</span>
+<Phone className="w-5 h-5" />
 </span>
 
  <input type="tel" value={whatsapp}
@@ -97,8 +96,7 @@ placeholder = "رقم الواتساب (مثال: 01012345678)" disabled={status
 
  <div className="relative">
 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">
- <span className="material-icons-outlined text-lg">
-send</span>
+<Send className="w-5 h-5" />
 </span>
 
  <input type="text" value={telegram}

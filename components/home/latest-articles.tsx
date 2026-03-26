@@ -2,6 +2,7 @@ import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { ar } from "date-fns/locale"
 import { ImageWithFallback } from "@/components/ui/image-with-fallback"
+import { ArrowLeft, User } from "lucide-react"
 
 interface Article {
   id: string
@@ -43,7 +44,7 @@ export function LatestArticles({ articles }: LatestArticlesProps) {
             className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-primary bg-card px-4 py-2 rounded-lg text-sm border border-border transition-all duration-300 hover:shadow-md"
           >
             عرض كل المقالات
-            <span className="material-icons-outlined text-sm rtl-flip">arrow_right_alt</span>
+            <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
           </Link>
         </div>
 
@@ -84,7 +85,7 @@ export function LatestArticles({ articles }: LatestArticlesProps) {
 
                     {/* Author */}
                     <div className="flex items-center gap-2 text-sm text-secondary font-medium">
-                      <span className="material-icons-outlined text-sm">person</span>
+                      <User className="h-4 w-4" />
                       <span>{article.author}</span>
                     </div>
 

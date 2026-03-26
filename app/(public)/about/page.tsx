@@ -249,6 +249,12 @@ export default async function AboutPage() {
                     src={about.sheikh_photo?.startsWith('http') ? about.sheikh_photo : "/placeholder.svg"}
                     alt={about.sheikh_name}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      if (target.src !== window.location.origin + '/placeholder.svg') {
+                        target.src = '/placeholder.svg'
+                      }
+                    }}
                   />
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a2018]/70 via-transparent to-transparent" />

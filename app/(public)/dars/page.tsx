@@ -143,7 +143,7 @@ export default async function DarsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
+    <main className="min-h-screen bg-background">
       <JsonLd schema={await generateItemListSchema(
         "الدروس العلمية - الشيخ السيد مراد",
         "/dars",
@@ -164,7 +164,7 @@ export default async function DarsPage() {
         <span className="text-sm font-semibold text-primary/80 bg-primary/5 px-4 py-1.5 rounded-full inline-block mb-4">
           العلم الشرعي
         </span>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-primary mb-6 relative inline-block font-display">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-primary mb-6 relative inline-block">
           جداول الدروس العلمية
           <div className="absolute -bottom-2 left-0 w-full h-2 bg-secondary/30 -z-10 rounded-full"></div>
         </h1>
@@ -471,7 +471,7 @@ export default async function DarsPage() {
                     </div>
 
                     <Link href={`/dars/${lesson.id}`} className="block">
-                      <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition mb-2">
+                      <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                         {lesson.title}
                       </h3>
                     </Link>
