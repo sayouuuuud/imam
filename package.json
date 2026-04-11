@@ -99,6 +99,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@netlify/functions": "^5.2.0",
     "@types/node": "^22",
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
