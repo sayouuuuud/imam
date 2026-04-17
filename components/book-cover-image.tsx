@@ -1,8 +1,7 @@
 "use client"
 
 import { useSignedUrl } from "@/hooks/use-signed-url"
-import { useState, useEffect, useLayoutEffect } from "react"
-import { Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
 
 interface BookCoverImageProps {
   coverImagePath?: string
@@ -27,6 +26,15 @@ export function BookCoverImage({
   showFallback = true
 }: BookCoverImageProps) {
   const { signedUrl, loading } = useSignedUrl(coverImagePath || null)
+  // استخدام state للـ error بدل DOM manipulation عشان يبقى React-friendly
+  // ويشتغل صح في المتصفحات الداخلية اللي فيها querySelector ممكن يتأخر
+  // أو onError يتنفذ قبل ما الـ fallback div يكون في الـ DOM.
+  const [imgError, setImgError] = useState(false)
+
+  // reset الخطأ لو اتغير الـ URL
+  useEffect(() => {
+    setImgError(false)
+  }, [signedUrl])
 
   const getContainerClasses = () => {
     switch (variant) {
@@ -100,9 +108,12 @@ export function BookCoverImage({
     )
   }
 
+  // الحالة اللي فيها نعرض صورة فعلية: عندنا URL شغّال ومفيش error
+  const shouldShowImage = signedUrl && signedUrl.trim() !== '' && !imgError
+
   return (
     <div className={getContainerClasses()} suppressHydrationWarning>
-      {signedUrl && signedUrl.trim() !== '' ? (
+      {shouldShowImage ? (
         <>
           {/* Show loading state when fetching signed URL */}
           {loading && (
@@ -118,46 +129,22 @@ export function BookCoverImage({
             src={signedUrl}
             alt={title}
             className={getImageClasses()}
-            onError={(e) => {
-              // Only log as warning to avoid cluttering console with expected 404s/fallbacks
-              console.warn('⚠️ Image failed to load (using fallback):', {
-                title: title,
-                url: signedUrl?.substring(0, 50) + '...',
-              })
-
-              // Hide the broken image and show fallback
-              const img = e.target as HTMLImageElement
-              img.style.display = 'none'
-
-              // Try to reload with a different approach if it's a B2 URL
-              if (signedUrl && signedUrl.includes('backblazeb2.com')) {
-                // Silect fallback attempt
-              }
-
-              const container = img.parentElement
-              if (container && showFallback) {
-                const fallback = container.querySelector('.image-fallback')
-                if (fallback) {
-                  (fallback as HTMLElement).style.display = 'block'
-                }
-              }
+            // referrerPolicy="no-referrer" بيساعد الصور تتحمل في المتصفحات
+            // الداخلية (زي فيسبوك) اللي بتحجب الطلبات بسبب سياسات الـ referrer.
+            referrerPolicy="no-referrer"
+            loading="lazy"
+            decoding="async"
+            onError={() => {
+              console.warn('Image failed to load:', title)
+              // نستخدم React state بدل DOM manipulation عشان يكون
+              // الـ fallback مضمون يظهر في كل المتصفحات.
+              setImgError(true)
             }}
           />
-
-          {/* Always render fallback but hide it when image loads */}
-          {showFallback && (
-            <div className="image-fallback" style={{ display: 'none' }} suppressHydrationWarning>
-              {getFallbackContent()}
-            </div>
-          )}
         </>
       ) : (
-        /* Show fallback when no signed URL */
-        showFallback && (
-          <div className="image-fallback" style={{ display: 'block' }} suppressHydrationWarning>
-            {getFallbackContent()}
-          </div>
-        )
+        /* عرض الـ fallback لو مفيش URL أو حصل خطأ في تحميل الصورة */
+        showFallback && getFallbackContent()
       )}
     </div>
   )
