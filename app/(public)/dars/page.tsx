@@ -16,12 +16,15 @@ import {
 } from "lucide-react"
 import { JsonLd } from "@/components/json-ld"
 import { generateItemListSchema } from "@/lib/schema-generator"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
-export const metadata: Metadata = {
-  title: "الدروس العلمية",
-  description:
-    "جداول الدروس العلمية الأسبوعية في الفقه والسيرة النبوية والعقيدة من الشيخ السيد مراد",
-  keywords: ["دروس إسلامية", "فقه", "سيرة نبوية", "عقيدة"],
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/dars", {
+    title: "الدروس العلمية",
+    description:
+      "جداول الدروس العلمية الأسبوعية في الفقه والسيرة النبوية والعقيدة من الشيخ السيد مراد",
+    keywords: "دروس إسلامية, فقه, سيرة نبوية, عقيدة",
+  })
 }
 
 // Helper function to get thumbnail URL

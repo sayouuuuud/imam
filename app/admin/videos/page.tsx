@@ -18,6 +18,7 @@ import { RichTextEditor } from "@/components/admin/rich-text-editor"
 import { Pagination } from "@/components/admin/pagination"
 import { CategorySelector } from "@/components/admin/category-selector"
 import { useDebounce } from "@/hooks/use-debounce"
+import { notifySearchEngines } from "@/lib/seo/indexnow-submit"
 
 interface VideoFormData {
   title: string
@@ -455,12 +456,19 @@ export default function VideosAdminPage() {
         category_id: categoryIdToSend,
       }
 
-      const { error } = await supabase.from("media").insert(insertPayload)
+      const { data: inserted, error } = await supabase
+        .from("media")
+        .insert(insertPayload)
+        .select("id, publish_status")
+        .single()
 
       if (!error) {
         setIsAddModalOpen(false)
         resetForm()
         fetchItems()
+        if (inserted?.publish_status === "published") {
+          notifySearchEngines([`/videos/${inserted.id}`, "/videos", "/"])
+        }
       } else {
         alert("حدث خطأ أثناء الإضافة: " + error.message)
       }

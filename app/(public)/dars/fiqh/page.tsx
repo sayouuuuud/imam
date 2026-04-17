@@ -1,10 +1,14 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { createPublicClient } from "@/lib/supabase/public"
 import { ChevronLeft, BookOpen, Play, Headphones, Calendar, Eye } from "lucide-react"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
-export const metadata = {
-  title: "دروس الفقه | الشيخ السيد مراد",
-  description: "أرشيف دروس الفقه الإسلامي للشيخ السيد مراد",
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/dars/fiqh", {
+    title: "دروس الفقه",
+    description: "أرشيف دروس الفقه الإسلامي للشيخ السيد مراد",
+  })
 }
 
 export default async function FiqhLessonsPage() {

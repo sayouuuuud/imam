@@ -12,7 +12,7 @@ import { stripHtml } from "@/lib/utils/strip-html"
 import { getSermonOgImage } from "@/lib/utils/og-images"
 
 import { Metadata } from "next"
-import { redirect } from "next/navigation"
+import { permanentRedirect } from "next/navigation"
 import { JsonLd } from "@/components/json-ld"
 import { generateArticleSchema, generateAudioSchema, generateBreadcrumbSchema, formatDurationToISO } from "@/lib/schema-generator"
 
@@ -39,15 +39,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!sermon) return { title: "الخطبة غير موجودة" }
 
     const ogImage = getSermonOgImage(sermon)
+    // Always prefer the slug for the canonical URL. Falls back to the raw
+    // segment so legacy UUID links still produce a valid canonical.
+    const canonicalPath = `/khutba/${sermon.slug || slug}`
 
     return {
         title: `${sermon.title} | الشيخ السيد مراد سلامة`,
         description: sermon.description ? sermon.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined,
+        alternates: {
+            canonical: canonicalPath,
+        },
         openGraph: {
             title: sermon.title,
             description: sermon.description ? sermon.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined,
             images: [ogImage],
             type: "article",
+            url: canonicalPath,
         },
         twitter: {
             card: "summary_large_image",
@@ -141,9 +148,10 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
     }
 
     // Permanent redirect if accessed via UUID but has a slug
-    if (isUuid && sermon.slug) {
-        redirect(`/khutba/${sermon.slug}`);
-    }
+  if (isUuid && sermon.slug) {
+    // 308 so Google consolidates the UUID URL onto the slug URL.
+    permanentRedirect(`/khutba/${encodeURI(sermon.slug)}`);
+  }
 
     // Fetch related sermons
     const { data: relatedSermonsData } = await supabase.from("sermons")

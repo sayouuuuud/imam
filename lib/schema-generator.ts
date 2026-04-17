@@ -160,13 +160,27 @@ export async function generateArticleSchema(article: {
     tags?: string[]
     authorName?: string
 }): Promise<SchemaType> {
+    // Strip any HTML from the raw body and compute a rough Arabic word count.
+    // Google uses `wordCount` + `articleBody` as quality / read-time signals,
+    // and without it our long-form posts get miscategorized as thin content.
+    const plainBody = article.content
+        ? article.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+        : ""
+    const wordCount = plainBody ? plainBody.split(/\s+/).filter(Boolean).length : undefined
+
     return {
         "@context": "https://schema.org",
         "@type": "Article",
         headline: article.title,
         description: article.description || "",
         url: `${SITE_URL}${article.url}`,
-        ...(article.image && { image: article.image }),
+        ...(article.image && {
+            image: {
+                "@type": "ImageObject",
+                url: article.image,
+                contentUrl: article.image,
+            },
+        }),
         datePublished: article.datePublished || new Date().toISOString(),
         dateModified: article.dateModified || article.datePublished || new Date().toISOString(),
         author: {
@@ -175,8 +189,14 @@ export async function generateArticleSchema(article: {
         publisher: {
             "@id": `${SITE_URL}/#person`,
         },
-        inLanguage: "ar",
-        ...(article.tags && article.tags.length > 0 && { keywords: article.tags.join(", ") }),
+        // Egyptian Arabic region hint helps Google show this in MENA results.
+        inLanguage: "ar-EG",
+        ...(wordCount && wordCount > 20 && { wordCount }),
+        ...(plainBody && { articleBody: plainBody.slice(0, 5000) }),
+        ...(article.tags && article.tags.length > 0 && {
+            keywords: article.tags.join(", "),
+            articleSection: article.tags[0],
+        }),
         mainEntityOfPage: {
             "@type": "WebPage",
             "@id": `${SITE_URL}${article.url}`,

@@ -32,15 +32,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!book) return { title: "الكتاب غير موجود" }
 
     const ogImage = getBookOgImage(book)
+    const canonicalPath = `/books/${book.slug || slug}`
 
     return {
         title: `${book.title} | الشيخ السيد مراد سلامة`,
         description: book.description ? stripHtml(book.description).slice(0, 160) : undefined,
+        alternates: {
+            canonical: canonicalPath,
+        },
         openGraph: {
             title: book.title,
             description: book.description ? stripHtml(book.description).slice(0, 160) : undefined,
             images: [ogImage],
             type: "book",
+            url: canonicalPath,
         },
         twitter: {
             card: "summary_large_image",
@@ -156,7 +161,8 @@ export default async function BookDetailPage({ params }: PageProps) {
     }
 
     if (isUuid && book.slug) {
-        redirect(`/books/${book.slug}`);
+        // 308 permanent so Google consolidates the UUID URL onto the slug URL.
+        permanentRedirect(`/books/${encodeURI(book.slug)}`);
     }
 
     // Fetch related books

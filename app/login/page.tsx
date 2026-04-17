@@ -1,4 +1,11 @@
+import type { Metadata } from "next"
 import { LoginForm } from "@/components/auth/login-form"
+
+// Login and other auth endpoints should never show up in Google's index.
+export const metadata: Metadata = {
+  title: "تسجيل الدخول",
+  robots: { index: false, follow: false },
+}
 
 export default async function AdminLoginPage() {
   return (

@@ -79,8 +79,17 @@ export async function generateMetadata(): Promise<Metadata> {
   const googleVerification = settings.google_verification || "t3yRqEKg6tGfcJWSeOMPcIisJSkYbIlsVkUF7zrpzdI"
   const bingVerification = settings.bing_verification || undefined
 
-  // Canonical URL from admin
-  const canonicalUrl = settings.canonical_url || "https://elsayed-mourad.online"
+  // Canonical URL from admin — normalized (no trailing slash) and guarded
+  // against broken values so we don't blow up `new URL()`.
+  const rawCanonical = settings.canonical_url || "https://elsayed-mourad.online"
+  const canonicalUrl = (() => {
+    try {
+      const u = new URL(rawCanonical)
+      return `${u.protocol}//${u.host}`
+    } catch {
+      return "https://elsayed-mourad.online"
+    }
+  })()
 
   // Use the production domain
   const baseUrl = new URL(canonicalUrl)
@@ -95,6 +104,11 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: siteKeywords.split(",").map((k: string) => k.trim()),
     authors: [{ name: settings.site_author || "الشيخ السيد مراد" }],
     creator: settings.site_author || "الشيخ السيد مراد",
+    // Advertise the site-wide canonical so Google knows which host is primary
+    // (prevents www / non-www or http / https duplicate indexing).
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       type: "website",
       locale: "ar_EG",
@@ -155,6 +169,25 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const appearance = await getAppearanceSettings()
+  const siteSettings = await getSiteSettings()
+
+  // Parse the admin-provided JSON-LD. Previous code read this field into
+  // the form but never rendered it anywhere, so anything the admin pasted
+  // was silently discarded.
+  let customStructuredData: unknown = null
+  if (siteSettings.structured_data && siteSettings.structured_data.trim()) {
+    try {
+      customStructuredData = JSON.parse(siteSettings.structured_data)
+    } catch (e) {
+      // Malformed JSON — log and skip instead of crashing the whole page.
+      console.warn("[v0] Invalid structured_data JSON in site_settings:", e)
+    }
+  }
+
+  // Google Analytics / Facebook Pixel IDs (rendered only if set)
+  const gaId = siteSettings.google_analytics_id?.trim()
+  const fbPixelId = siteSettings.facebook_pixel_id?.trim()
+
   // Note: Colors are now handled by globals.css CSS variables, not inline styles
   return (
     <html
@@ -167,6 +200,26 @@ export default async function RootLayout({
         {/* Optimize Font Loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Warm up the Supabase image/storage host early so article and
+            book covers start downloading before the parser hits them. Cuts
+            LCP on content-heavy pages noticeably. */}
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <>
+            <link
+              rel="preconnect"
+              href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin}
+              crossOrigin="anonymous"
+            />
+            <link
+              rel="dns-prefetch"
+              href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin}
+            />
+          </>
+        )}
+
+        {/* RSS autodiscovery helps Google News / readers surface new posts. */}
+        <link rel="alternate" type="application/rss+xml" title="آخر المقالات" href="/feed.xml" />
 
         {/* Preload Material Icons to prevent FOUC (Flash of Unstyled Content) */}
         <link
@@ -230,6 +283,38 @@ export default async function RootLayout({
             <SessionManager />
             <AnalyticsTracker />
             <JsonLd schema={[await generateWebsiteSchema(), await generatePersonSchema()]} />
+            {customStructuredData !== null && (
+              <JsonLd schema={customStructuredData as Record<string, unknown>} />
+            )}
+            {gaId && (
+              <>
+                <Script
+                  src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+                  strategy="afterInteractive"
+                />
+                <Script id="ga-init" strategy="afterInteractive">
+                  {`
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '${gaId}', { anonymize_ip: true });
+                  `}
+                </Script>
+              </>
+            )}
+            {fbPixelId && (
+              <Script id="fb-pixel" strategy="afterInteractive">
+                {`
+                  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+                  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+                  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+                  document,'script','https://connect.facebook.net/en_US/fbevents.js');
+                  fbq('init', '${fbPixelId}');
+                  fbq('track', 'PageView');
+                `}
+              </Script>
+            )}
             {children}
           </AuthProvider>
         </ThemeProvider>
