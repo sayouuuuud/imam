@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
 import { Home, Search, ChevronLeft } from "lucide-react"
+import { InAppBrowserBlocker } from "@/components/in-app-browser-blocker"
 import { BookCoverImage } from "@/components/book-cover-image"
 import { BookInteractions } from "@/components/books/book-interactions"
 import { stripHtml } from "@/lib/utils/strip-html"
@@ -210,6 +211,7 @@ export default async function BookDetailPage({ params }: PageProps) {
             className="min-h-screen dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300"
             style={{ backgroundColor: "#f8fafc" }}
         >
+            <InAppBrowserBlocker />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             <JsonLd schema={[bookSchema, breadcrumbSchema]} />
             {/* Breadcrumb */}

@@ -11,6 +11,7 @@ import {
   Award,
   ArrowLeft,
 } from "lucide-react"
+import { InAppBrowserBlocker } from "@/components/in-app-browser-blocker"
 import { StatisticsSection } from "@/about/statistics"
 import { MissionVisionSection } from "@/components/about/mission-vision-section"
 import { JourneyTimeline } from "@/components/about/journey-timeline"
@@ -143,6 +144,7 @@ export default async function AboutPage() {
 
   return (
     <main className="min-h-screen bg-background overflow-hidden">
+      <InAppBrowserBlocker />
       {/* Hero Section - Clean & Modern */}
       <section className="relative min-h-[85vh] flex items-center overflow-hidden">
         {/* Background */}

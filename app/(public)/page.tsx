@@ -2,6 +2,7 @@
 import type { Metadata } from "next"
 import { createPublicClient } from "@/lib/supabase/public"
 import { buildPageMetadata } from "@/lib/seo/page-metadata"
+import { InAppBrowserBlocker } from "@/components/in-app-browser-blocker"
 import { HeroSection } from "@/components/home/hero-section"
 import { LatestContent } from "@/components/home/latest-lessons"
 import { WeeklySchedule } from "@/components/home/weekly-schedule"
@@ -266,7 +267,7 @@ export default async function HomePage() {
 
   return (
     <>
-
+      <InAppBrowserBlocker />
       <ScrollAnimation>
         <HeroSection data={heroData} />
       </ScrollAnimation>

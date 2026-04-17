@@ -338,7 +338,6 @@ export default async function RootLayout({
           storageKey="theme"
         >
           <AuthProvider>
-            <InAppBrowserBlocker />
             <SessionManager />
             <AnalyticsTracker />
             <JsonLd schema={[await generateWebsiteSchema(), await generatePersonSchema()]} />
