@@ -152,8 +152,6 @@ export function BookCoverImage({
           src={signedUrl}
           alt={title}
           className={getImageClasses()}
-          referrerPolicy="no-referrer"
-          crossOrigin="anonymous"
           loading="lazy"
           decoding="async"
           style={{
