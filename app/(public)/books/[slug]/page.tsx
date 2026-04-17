@@ -204,11 +204,11 @@ export default async function BookDetailPage({ params }: PageProps) {
     ])
 
     return (
-        // inline style backup لخلفية الصفحة عشان تشتغل في المتصفحات الداخلية
-        // اللي بتتجاهل CSS @layer (زي فيسبوك/انستجرام webview القديمة)
+        // hex color مباشر للخلفية عشان يشتغل في المتصفحات الداخلية
+        // اللي بتتجاهل CSS @layer والـ variables
         <div
-            className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300"
-            style={{ backgroundColor: "var(--color-background, #fdfbf7)" }}
+            className="min-h-screen dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300"
+            style={{ backgroundColor: "#f8fafc" }}
         >
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             <JsonLd schema={[bookSchema, breadcrumbSchema]} />

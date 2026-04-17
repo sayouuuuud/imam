@@ -233,12 +233,10 @@ export function Header({ initialLogo, initialDarkLogo, initialNavLinks }: Header
     <>
       <header
         className={cn(
-          // خلفية صلبة 100% بدون شفافية عشان تفضل ظاهرة في كل المتصفحات
-          // بما فيها المتصفحات الداخلية اللي ماعندهاش دعم للـ backdrop-filter
-          // أو color-mix()، اللي كانت بتخلي الهيدر يبان شفاف والمحتوى يطلع من ورا.
-          "sticky top-0 z-50 w-full bg-background border-b border-border transition-all duration-200",
+          "sticky top-0 z-50 w-full border-b border-border transition-all duration-200",
           scrolled ? "shadow-md" : "shadow-sm",
         )}
+        style={{ backgroundColor: '#f8fafc' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-1">
           <div className="flex justify-between h-[74px] items-center">
