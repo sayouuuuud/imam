@@ -4,9 +4,8 @@ import { useState, useEffect, useRef } from "react"
 import { Document, Page, pdfjs } from "react-pdf"
 import { LoadingSpinner } from "./loading-spinner"
 import { Button } from "./ui/button"
-import { Input } from "./ui/input"
 import { useSignedUrl } from "@/hooks/use-signed-url"
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw } from "lucide-react"
+import { ZoomIn, ZoomOut, RotateCcw, Download, ExternalLink } from "lucide-react"
 
 
 // Use local static worker from public folder to ensure Same-Origin (fixes Brave Android)
@@ -19,14 +18,40 @@ interface PDFViewerProps {
   fileKey: string // Can be a raw URL or a key
   title: string
   className?: string
+  bookId?: string
 }
 
-export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
+/**
+ * Detect environments where pdf.js is likely to fail:
+ *   - Facebook / Instagram / Messenger / TikTok in-app WebViews
+ *     (they often block web workers or ship very old Chromium)
+ *   - Very old Android WebView versions
+ */
+function detectProblematicBrowser(): boolean {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false
+  const ua = navigator.userAgent || ""
+  const inAppPatterns = [
+    /FBA[NV]/i,          // Facebook app
+    /Instagram/i,
+    /Messenger/i,
+    /Line\//i,
+    /Twitter/i,
+    /TikTok/i, /Bytedance/i,
+    /MicroMessenger/i,   // WeChat
+    /LinkedInApp/i,
+    /Snapchat/i,
+    /\bWebView\b/i,
+    /; wv\)/i,           // Android WebView marker
+  ]
+  return inAppPatterns.some((re) => re.test(ua))
+}
+
+export function PDFViewer({ fileKey, title, className = "", bookId }: PDFViewerProps) {
   const isUrl = fileKey.startsWith("http") || fileKey.startsWith("/api") || fileKey.startsWith("split:")
   const { signedUrl: hookSignedUrl, loading: hookLoading, error: hookError } = useSignedUrl(!isUrl ? fileKey : "")
 
-  // Determine the final URL to usage
-  let finalUrl = "";
+  // Determine the final URL to use
+  let finalUrl = ""
 
   if (fileKey.startsWith("split:") || fileKey.startsWith("manifest:")) {
     // Handle split/manifest files via proxy
@@ -36,12 +61,11 @@ export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
     if (fileKey.startsWith("/") && !fileKey.includes("inline=true")) {
       finalUrl = `${fileKey}${fileKey.includes('?') ? '&' : '?'}inline=true`
     } else if (fileKey.startsWith("http")) {
-      // External URL
-      // If it's UploadThing or R2, use DIRECT URL to save Vercel bandwidth and enable native Range Requests
+      // External URL — go direct for UploadThing/R2 to enable Range requests,
+      // proxy everything else to dodge CORS / referer tracking.
       if (fileKey.includes('utfs.io') || fileKey.includes('uploadthing') || fileKey.includes('r2.dev')) {
         finalUrl = fileKey
       } else {
-        // Other external URLs (like old Cloudinary or others) - proxy to avoid CORS or tracking
         finalUrl = `/api/download-pdf?url=${encodeURIComponent(fileKey)}&inline=true`
       }
     } else {
@@ -55,15 +79,33 @@ export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
   const [scale, setScale] = useState<number>(1.0)
   const [containerWidth, setContainerWidth] = useState<number>(0)
   const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pdfError, setPdfError] = useState<Error | null>(null)
+  // When `useNativeFallback` is true we skip pdf.js entirely and rely on the
+  // browser's built-in PDF handling (iframe / object / download link).
+  const [useNativeFallback, setUseNativeFallback] = useState<boolean>(false)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Decide up-front whether we should even try pdf.js. In-app browsers often
+  // can't spin up the worker, which causes pdf.js to hang forever — worse UX
+  // than just showing a native fallback right away.
+  useEffect(() => {
+    if (detectProblematicBrowser()) {
+      setUseNativeFallback(true)
+    }
+  }, [])
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages)
   }
 
-  // Handle Resize for responsive page width
+  // Handle resize for responsive page width
   useEffect(() => {
     if (!containerRef.current) return
+    if (useNativeFallback) return
+
+    // ResizeObserver is supported in every browser that can actually run
+    // pdf.js, but guard anyway in case a very old WebView slipped through.
+    if (typeof ResizeObserver === "undefined") return
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -75,36 +117,31 @@ export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
 
     resizeObserver.observe(containerRef.current)
     return () => resizeObserver.disconnect()
-  }, [])
+  }, [useNativeFallback])
 
   // Track current page based on scroll position (with debounce for performance)
   useEffect(() => {
     const container = containerRef.current
-    if (!container || numPages === 0) return
+    if (!container || numPages === 0 || useNativeFallback) return
 
     let scrollTimeout: ReturnType<typeof setTimeout> | null = null
 
     const handleScroll = () => {
-      // Debounce scroll handler to prevent excessive updates during fast scrolling
       if (scrollTimeout) clearTimeout(scrollTimeout)
-
       scrollTimeout = setTimeout(() => {
         const containerHeight = container.clientHeight
         const pageElements = container.querySelectorAll('[data-page]')
-
         for (const el of pageElements) {
           const rect = el.getBoundingClientRect()
           const containerRect = container.getBoundingClientRect()
           const relativeTop = rect.top - containerRect.top
-
-          // Page is considered "current" if it's mostly visible
           if (relativeTop >= -rect.height / 2 && relativeTop <= containerHeight / 2) {
             const pageNum = parseInt(el.getAttribute('data-page') || '1', 10)
             setCurrentPage(pageNum)
             break
           }
         }
-      }, 100) // 100ms debounce
+      }, 100)
     }
 
     container.addEventListener('scroll', handleScroll, { passive: true })
@@ -112,18 +149,20 @@ export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
       container.removeEventListener('scroll', handleScroll)
       if (scrollTimeout) clearTimeout(scrollTimeout)
     }
-  }, [numPages])
+  }, [numPages, useNativeFallback])
 
   // Auto-scale on mobile/desktop based on container width
-  const effectiveWidth = containerWidth > 0 ? containerWidth - 32 : 300 // padding consideration
-
-  const [pdfError, setPdfError] = useState<Error | null>(null)
+  const effectiveWidth = containerWidth > 0 ? containerWidth - 32 : 300
 
   function onDocumentLoadError(error: Error) {
-    console.error('❌ PDF Load Error:', error)
+    console.error('[PDFViewer] pdf.js load error, falling back to native viewer:', error)
     setPdfError(error)
+    // Auto-fall back: don't leave user stuck on an error screen when a native
+    // iframe could very well render the same PDF just fine.
+    setUseNativeFallback(true)
   }
 
+  // ========== LOADING / ERROR states for the signed URL resolution ==========
   if ((!isUrl && hookLoading)) {
     return (
       <div className="flex items-center justify-center h-64 bg-muted/10 rounded-lg">
@@ -141,18 +180,104 @@ export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
     )
   }
 
-  if (pdfError) {
+  // ========== NATIVE FALLBACK (in-app browsers / pdf.js failed) ==========
+  // We use <object> with an <iframe> fallback which covers:
+  //   - Desktop browsers with native PDF handlers
+  //   - iOS Safari (inline PDFs)
+  //   - Android Chrome (inline PDFs)
+  //   - Other WebViews that at least support iframe navigation to a PDF
+  // If nothing renders, the inner <div> with the download links shows through.
+  if (useNativeFallback && finalUrl) {
+    return (
+      <div className={`flex flex-col h-full bg-muted ${className}`}>
+        <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-card border-b border-border shadow-sm z-10 sticky top-0">
+          <span className="text-sm font-medium truncate max-w-[60%]">{title}</span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(finalUrl, '_blank', 'noopener,noreferrer')}
+              title="فتح في نافذة جديدة"
+            >
+              <ExternalLink className="h-4 w-4 ml-1" />
+              <span className="text-xs">فتح</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              title="تحميل الملف"
+            >
+              <a
+                href={bookId ? `/api/download-pdf?url=${encodeURIComponent(fileKey)}&id=${bookId}` : finalUrl}
+                download={`${title || 'book'}.pdf`}
+              >
+                <Download className="h-4 w-4 ml-1" />
+                <span className="text-xs">تحميل</span>
+              </a>
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex-1 bg-muted relative overflow-hidden">
+          {/* <object> lets the browser use its native PDF engine when possible.
+              The inner <iframe>+message is the cascading fallback. */}
+          <object
+            data={finalUrl}
+            type="application/pdf"
+            className="w-full h-full"
+            aria-label={title}
+          >
+            <iframe
+              src={finalUrl}
+              title={title}
+              className="w-full h-full border-0"
+              loading="lazy"
+            >
+              <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                <p className="text-foreground font-medium mb-2">
+                  المتصفح الحالي لا يدعم عرض ملفات PDF داخل الصفحة.
+                </p>
+                <p className="text-muted-foreground text-sm mb-4">
+                  يمكنك تحميل الملف وقراءته على جهازك.
+                </p>
+                <a
+                  href={finalUrl}
+                  download={`${title || 'book'}.pdf`}
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-3 rounded-lg font-medium"
+                >
+                  <Download className="h-4 w-4" />
+                  تحميل الملف
+                </a>
+              </div>
+            </iframe>
+          </object>
+        </div>
+      </div>
+    )
+  }
+
+  // ========== Hard pdf.js error (kept for completeness — normally
+  // onDocumentLoadError flips us into the native fallback above) ==========
+  if (pdfError && !useNativeFallback) {
     return (
       <div className="flex flex-col items-center justify-center h-64 bg-red-50 text-red-600 rounded-lg p-4 text-center">
         <p className="font-bold mb-2">حدث خطأ أثناء عرض الملف</p>
         <p className="text-sm mb-4 ltr" dir="ltr">{pdfError.message}</p>
-        <Button
-          variant="outline"
-          onClick={() => { setPdfError(null); window.location.reload(); }}
-          className="bg-white hover:bg-gray-100"
-        >
-          إعادة المحاولة
-        </Button>
+        <div className="flex gap-2 flex-wrap justify-center">
+          <Button
+            variant="outline"
+            onClick={() => { setPdfError(null); setUseNativeFallback(true); }}
+          >
+            استخدام العارض البديل
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => { setPdfError(null); window.location.reload(); }}
+          >
+            إعادة المحاولة
+          </Button>
+        </div>
       </div>
     )
   }
@@ -191,7 +316,7 @@ export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => { setScale(1); }} // Reset Zoom
+            onClick={() => { setScale(1); }}
             title="إعادة تعيين الحجم"
           >
             <RotateCcw className="h-4 w-4" />
@@ -217,8 +342,7 @@ export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
           }
           className="flex flex-col items-center pb-20 w-full"
         >
-          {/* Render All Pages for Vertical Scrolling with Lazy Loading */}
-          {numPages > 0 && Array.from(new Array(numPages), (el, index) => (
+          {numPages > 0 && Array.from(new Array(numPages), (_, index) => (
             <LazyPDFPage
               key={`page_${index + 1}`}
               pageNumber={index + 1}
@@ -233,7 +357,7 @@ export function PDFViewer({ fileKey, title, className = "" }: PDFViewerProps) {
   )
 }
 
-// Helper component for Lazy Loading Pages with 3-page window (optimized for bandwidth)
+// Helper component for lazy loading with a 3-page window (optimized for bandwidth)
 function LazyPDFPage({
   pageNumber,
   width,
@@ -274,7 +398,6 @@ function LazyPDFPage({
           }
         />
       ) : (
-        // Placeholder for pages outside window
         <div style={{ height: width * 1.414, width: '100%' }} className="bg-gray-50 flex flex-col items-center justify-center text-gray-300 border border-dashed border-gray-200">
           <span className="text-sm font-medium">صفحة {pageNumber}</span>
         </div>

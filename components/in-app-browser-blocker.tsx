@@ -17,22 +17,53 @@ export function InAppBrowserBlocker() {
         setCurrentUrl(window.location.href)
 
         const ua = navigator.userAgent || (navigator as any).vendor || (window as any).opera || ""
-        
-        // Detect common in-app browsers
+
+        // Expanded list of known in-app browser signatures. These WebViews
+        // typically run an outdated Chromium/WebKit and don't play nicely
+        // with modern CSS (color-mix, oklch, dvh…) or PDF.js workers.
         const rules = [
-            'WebView', 'Android.*Version/[0-9].[0-9]', 
-            'FBAV', 'FBAN', // Facebook
-            'Instagram', 
-            'Line', 
-            'Twitter', 
-            'Snapchat', 
-            'Messenger', 
-            'TikTok', 'Bytedance', 
-            'MicroMessenger', // WeChat
-            'LinkedInApp', 
+            // Facebook family
+            'FBAV', 'FBAN', 'FBIOS', 'FB_IAB', 'FB4A', 'FBSV', 'FBDV',
+            // Instagram
+            'Instagram',
+            // Messenger
+            'Messenger', 'MessengerLite', 'Messenger for',
+            // LINE
+            '\\bLine\\/', 'LineApp',
+            // Twitter / X
+            'Twitter', 'TwitterAndroid',
+            // Snapchat
+            'Snapchat',
+            // TikTok / Douyin
+            'TikTok', 'Bytedance', 'BytedanceWebview', 'trill',
+            // WeChat / QQ / Weibo
+            'MicroMessenger', 'QQ\\/', 'Weibo',
+            // LinkedIn
+            'LinkedInApp',
+            // Pinterest
+            'Pinterest',
+            // KAKAOTALK
+            'KAKAOTALK',
+            // Google News / Google App in-app
+            'GSA\\/',
+            // Generic WebView markers (last resort)
+            '; wv\\)',
+            'WebView',
         ]
-        
-        const isInAppBrowser = new RegExp(rules.join('|'), 'i').test(ua)
+
+        // Regex catches the signatures above in the UA string.
+        const inAppRegex = new RegExp(rules.join('|'), 'i')
+        let isInAppBrowser = inAppRegex.test(ua)
+
+        // Extra heuristic: Android UA that is missing the "Chrome/" token is
+        // almost always a restricted WebView. Real Chrome, Samsung Internet,
+        // Firefox, Edge all include their own identifiers.
+        if (!isInAppBrowser && /Android/i.test(ua)) {
+            const hasKnownBrowser = /Chrome\/|SamsungBrowser|Firefox|EdgA|OPR\/|UCBrowser|YaBrowser|MiuiBrowser|HuaweiBrowser|DuckDuckGo/i.test(ua)
+            if (!hasKnownBrowser) {
+                isInAppBrowser = true
+            }
+        }
 
         if (isInAppBrowser) {
             setIsBlocked(true)
