@@ -7,9 +7,18 @@ import { Download } from "lucide-react"
 import dynamic from "next/dynamic"
 
 // Dynamic import for PDFViewer
+// ملاحظة: الـ loading state محتاج خلفية صلبة عشان في المتصفحات الداخلية
+// الـ bg-muted/10 (اللي بيستخدم color-mix) ممكن يبان شفاف تماماً.
 const PDFViewer = dynamic(() => import("@/components/pdf-viewer").then(mod => mod.PDFViewer), {
     ssr: false,
-    loading: () => <div className="h-96 w-full flex items-center justify-center bg-muted/10 rounded-lg animate-pulse">جاري تحميل القارئ...</div>
+    loading: () => (
+        <div className="h-full w-full flex items-center justify-center bg-background rounded-lg">
+            <div className="text-center">
+                <div className="inline-block h-10 w-10 rounded-full border-4 border-primary border-t-transparent animate-spin mb-4"></div>
+                <p className="text-muted-foreground text-sm">جاري تحميل القارئ...</p>
+            </div>
+        </div>
+    )
 })
 
 interface BookInteractionsProps {

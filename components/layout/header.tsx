@@ -233,7 +233,10 @@ export function Header({ initialLogo, initialDarkLogo, initialNavLinks }: Header
     <>
       <header
         className={cn(
-          "sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95 transition-all duration-200 border-b border-border",
+          // خلفية صلبة 100% بدون شفافية عشان تفضل ظاهرة في كل المتصفحات
+          // بما فيها المتصفحات الداخلية اللي ماعندهاش دعم للـ backdrop-filter
+          // أو color-mix()، اللي كانت بتخلي الهيدر يبان شفاف والمحتوى يطلع من ورا.
+          "sticky top-0 z-50 w-full bg-background border-b border-border transition-all duration-200",
           scrolled ? "shadow-md" : "shadow-sm",
         )}
       >
@@ -312,7 +315,8 @@ export function Header({ initialLogo, initialDarkLogo, initialNavLinks }: Header
           )} </div>
       </header>
 
-      {/* Search Modal */} {searchOpen && (<div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 bg-background/80 dark:bg-background/90 backdrop-blur-sm animate-in fade-in duration-200" onClick={() =>
+      {/* Search Modal - خلفية overlay صلبة بـ rgba سوداء عشان تشتغل في كل المتصفحات */}
+      {searchOpen && (<div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 animate-in fade-in duration-200" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }} onClick={() =>
         setSearchOpen(false)} > <div className="w-full max-w-2xl mx-4 bg-card rounded-2xl shadow-2xl p-6 border border-border animate-in slide-in-from-top-4 duration-300" onClick={(e) =>
           e.stopPropagation()}
           dir="rtl" > <form onSubmit={handleSearch}
