@@ -1,17 +1,29 @@
+import type { Metadata } from "next"
 import { createPublicClient } from "@/lib/supabase/public"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Search, Mic, BookOpen, FileText, BookMarked } from "lucide-react"
 import { JsonLd } from "@/components/json-ld"
 import { generateBreadcrumbSchema, generateSearchResultsSchema } from "@/lib/schema-generator"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>
 }
 
-export const metadata = {
-  title: "البحث في الموقع",
-  description: "ابحث في الخطب والدروس والمقالات والكتب",
+export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
+  const { q } = await searchParams
+  const base = await buildPageMetadata("/search", {
+    title: "البحث في الموقع",
+    description: "ابحث في الخطب والدروس والمقالات والكتب",
+  })
+  // Search result pages should not be indexed — they generate infinite
+  // permutations of the same content and dilute PageRank.
+  return {
+    ...base,
+    title: q ? `نتائج البحث عن: ${q}` : base.title,
+    robots: { index: false, follow: true },
+  }
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {

@@ -2,11 +2,13 @@ import Link from "next/link"
 import { createPublicClient } from "@/lib/supabase/public"
 import type { Metadata } from "next"
 import { Calendar, ChevronRight, ChevronLeft, CalendarDays, CalendarRange, Clock, MapPin } from "lucide-react"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
-
-export const metadata: Metadata = {
-  title: "الجدول الزمني",
-  description: "الجدول الشهري للدروس والمحاضرات والخطب للشيخ السيد مراد",
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/schedule", {
+    title: "الجدول الزمني",
+    description: "الجدول الشهري للدروس والمحاضرات والخطب للشيخ السيد مراد",
+  })
 }
 
 interface ScheduleEvent {

@@ -1,6 +1,14 @@
+import type { Metadata } from "next"
 import { createPublicClient } from "@/lib/supabase/public"
-import Link from "next/link" 
-export const metadata = { title: "الخطب المنبرية", description: "استمع إلى خطب الجمعة والأعياد والمناسبات الدينية", }
+import Link from "next/link"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/sermons", {
+    title: "الخطب المنبرية",
+    description: "استمع إلى خطب الجمعة والأعياد والمناسبات الدينية",
+  })
+}
 
 export default async function SermonsPage() {
  const supabase = createPublicClient() 

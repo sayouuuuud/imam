@@ -6,16 +6,15 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { JsonLd } from "@/components/json-ld"
 import { generateItemListSchema } from "@/lib/schema-generator"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
-export const metadata: Metadata = {
-  title: "المرئيات والمحاضرات - الشيخ السيد مراد",
-  description: "مجموعة من الخطب والدروس واللقاءات التلفزيونية المرئية للشيخ السيد مراد",
-  keywords: ["مرئيات إسلامية", "محاضرات", "خطب", "فيديو"],
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/videos", {
     title: "المرئيات والمحاضرات",
-    description: "خطب ودروس ومحاضرات مصورة",
-    type: "website",
-  },
+    description:
+      "مجموعة من الخطب والدروس واللقاءات التلفزيونية المرئية للشيخ السيد مراد",
+    keywords: "مرئيات إسلامية, محاضرات, خطب, فيديو",
+  })
 }
 
 function formatViews(views: number): string {

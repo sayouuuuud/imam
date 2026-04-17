@@ -7,16 +7,15 @@ import { Button } from "@/components/ui/button"
 import { ImageWithFallback } from "@/components/ui/image-with-fallback"
 import { JsonLd } from "@/components/json-ld"
 import { generateItemListSchema } from "@/lib/schema-generator"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
-export const metadata: Metadata = {
-  title: "المقالات والبحوث - الشيخ السيد مراد",
-  description: "مجموعة من المقالات والبحوث العلمية في العلوم الشرعية والقضايا المعاصرة من الشيخ السيد مراد",
-  keywords: ["مقالات إسلامية", "بحوث", "فقه", "قضايا معاصرة"],
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/articles", {
     title: "المقالات والبحوث",
-    description: "مقالات وبحوث شرعية معمقة",
-    type: "website",
-  },
+    description:
+      "مجموعة من المقالات والبحوث العلمية في العلوم الشرعية والقضايا المعاصرة من الشيخ السيد مراد",
+    keywords: "مقالات إسلامية, بحوث, فقه, قضايا معاصرة",
+  })
 }
 
 export default async function ArticlesPage({

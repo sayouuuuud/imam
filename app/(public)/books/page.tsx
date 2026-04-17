@@ -7,16 +7,15 @@ import { BookOpen, Search, ChevronRight, ChevronLeft, FileText, Eye } from "luci
 import { BookCoverImage } from "@/components/book-cover-image"
 import { JsonLd } from "@/components/json-ld"
 import { generateItemListSchema } from "@/lib/schema-generator"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
-export const metadata: Metadata = {
-  title: "الكتب والمؤلفات",
-  description: "مجموعة مختارة من مؤلفات الشيخ السيد مراد في الفقه والعقيدة والسيرة النبوية متاحة للقراءة والتحميل",
-  keywords: ["كتب إسلامية", "مؤلفات", "فقه", "عقيدة", "تحميل كتب"],
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/books", {
     title: "الكتب والمؤلفات",
-    description: "مؤلفات الشيخ السيد مراد المتخصصة في العلوم الشرعية",
-    type: "website",
-  },
+    description:
+      "مجموعة مختارة من مؤلفات الشيخ السيد مراد في الفقه والعقيدة والسيرة النبوية متاحة للقراءة والتحميل",
+    keywords: "كتب إسلامية, مؤلفات, فقه, عقيدة, تحميل كتب",
+  })
 }
 
 export default async function BooksPage({

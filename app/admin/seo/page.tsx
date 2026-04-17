@@ -198,7 +198,20 @@ export default function SEOManagementPage() {
           { onConflict: "key" }
         )
       }
-      setMessage("تم حفظ إعدادات SEO بنجاح")
+      // Bust server-side cache so the new meta tags appear on the next
+      // request instead of waiting 5 minutes for unstable_cache to expire.
+      // Without this, admins were seeing stale metadata and thought the
+      // tool "didn't work".
+      try {
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tags: ["seo-settings", "site-settings"] }),
+        })
+      } catch (err) {
+        console.warn("[v0] Revalidate after save failed:", err)
+      }
+      setMessage("تم حفظ إعدادات SEO وتحديث الكاش بنجاح")
     } catch (error) {
       setMessage("حدث خطأ أثناء حفظ الإعدادات")
     }
@@ -212,17 +225,30 @@ export default function SEOManagementPage() {
     }
     try {
       if (editingPageId) {
-        await supabase.from("seo_settings").update(
-          {
-            ...pageFormData,
-            updated_at: new Date().toISOString(),
-          },
-          { eq: { id: editingPageId } }
-        )
+        // Note: supabase.update expects `.eq()` chained, not a second object arg.
+        // The old shape was a no-op and silently failed to persist edits.
+        await supabase
+          .from("seo_settings")
+          .update({ ...pageFormData, updated_at: new Date().toISOString() })
+          .eq("id", editingPageId)
         setMessage("تم تحديث إعدادات SEO للصفحة بنجاح")
       } else {
         await supabase.from("seo_settings").insert(pageFormData)
         setMessage("تم إضافة إعدادات SEO للصفحة بنجاح")
+      }
+      // Bust metadata cache so the new per-page title/description shows up
+      // immediately, and revalidate the specific path too.
+      try {
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paths: [pageFormData.page_path],
+            tags: ["seo-settings"],
+          }),
+        })
+      } catch (err) {
+        console.warn("[v0] Revalidate after page SEO save failed:", err)
       }
       resetPageForm()
       loadPageSEO()
@@ -1312,7 +1338,7 @@ Sitemap: https://example.com/sitemap.xml`}
                   مسح كاش جميع الصفحات
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  سيتم إعادة تحميل جميع الصفحات الرئيسية. استخدم هذا إذا لم تظهر التغييرات.
+                  سيتم إعاد�� تحميل جميع الصفحات الرئيسية. استخدم هذا إذا لم تظهر التغييرات.
                 </p>
                 <Button
                   onClick={clearCache}

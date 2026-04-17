@@ -17,17 +17,15 @@ import {
 } from "lucide-react"
 import { BookCoverImage } from "@/components/book-cover-image"
 import { SafeHtml } from "@/components/ui/safe-html"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
-export const metadata: Metadata = {
-  title: "الخطب المنبرية",
-  description:
-    "مجموعة متكاملة من خطب الجمعة والأعياد والمناسبات الدينية مرتبة ومؤرشفة",
-  keywords: ["خطب جمعة", "خطب دينية", "محاضرات إسلامية", "خطب المناسبات"],
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/khutba", {
     title: "الخطب المنبرية",
-    description: "استمع إلى خطب الشيخ السيد مراد",
-    type: "website",
-  },
+    description:
+      "مجموعة متكاملة من خطب الجمعة والأعياد والمناسبات الدينية مرتبة ومؤرشفة",
+    keywords: "خطب جمعة, خطب دينية, محاضرات إسلامية, خطب المناسبات",
+  })
 }
 
 export default async function KhutbaPage({

@@ -24,5 +24,7 @@ export const getSiteSettings = unstable_cache(
         }
     },
     ["site_settings"],
-    { revalidate: 300 }
+    // Tagged so that `revalidateTag("seo-settings")` from /api/revalidate
+    // instantly busts this cache when the admin hits "save".
+    { revalidate: 300, tags: ["seo-settings", "site-settings"] }
 )

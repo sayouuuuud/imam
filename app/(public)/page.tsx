@@ -1,6 +1,7 @@
 
 import type { Metadata } from "next"
 import { createPublicClient } from "@/lib/supabase/public"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 import { HeroSection } from "@/components/home/hero-section"
 import { LatestContent } from "@/components/home/latest-lessons"
 import { WeeklySchedule } from "@/components/home/weekly-schedule"
@@ -76,15 +77,14 @@ const getHomePageData = unstable_cache(
   { revalidate: 60 }
 )
 
-export const metadata: Metadata = {
-  title: "الرئيسية",
-  description:
-    "منصة إسلامية شاملة تقدم خطب ودروس علمية ومقالات وكتب من الشيخ السيد مراد. تعلم العلم الشرعي بسهولة ويسر.",
-  openGraph: {
-    title: "الشيخ السيد مراد - الرئيسية",
-    description: "منصة إسلامية شاملة تقدم خطب ودروس وكتب إسلامية",
-    type: "website",
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  // Reads the admin's /admin/seo values (global + per-page row for "/")
+  // so that changes made in the dashboard actually reach Google.
+  return buildPageMetadata("/", {
+    title: "الرئيسية",
+    description:
+      "منصة إسلامية شاملة تقدم خطب ودروس علمية ومقالات وكتب من الشيخ السيد مراد. تعلم العلم الشرعي بسهولة ويسر.",
+  })
 }
 
 function formatTime12h(time: string | null): string {

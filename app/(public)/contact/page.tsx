@@ -1,10 +1,13 @@
 import type { Metadata } from "next"
 import { createPublicClient } from "@/lib/supabase/public"
 import { ContactForm } from "./contact-form"
+import { buildPageMetadata } from "@/lib/seo/page-metadata"
 
-export const metadata: Metadata = {
-  title: "تواصل معنا",
-  description: "تواصل مع فريق موقع الشيخ السيد مراد - نسعد باستقبال استفساراتكم واقتراحاتكم",
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/contact", {
+    title: "تواصل معنا",
+    description: "تواصل مع فريق موقع الشيخ السيد مراد - نسعد باستقبال استفساراتكم واقتراحاتكم",
+  })
 }
 
 // Default settings to use if database fetch fails
