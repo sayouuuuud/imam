@@ -27,6 +27,27 @@
   --color-secondary-light: #e5c85c;
   --color-secondary-foreground: #1f2937;
 
+  /* ========== RGB TOKENS for in-app browser rgba() fallbacks ========== */
+  /* These are used inside @supports not (color-mix) blocks below to avoid
+     breaking styling on Facebook / Instagram / Messenger in-app WebViews
+     that don't support color-mix() or oklch(). */
+  --color-primary-rgb: 3, 93, 68;
+  --color-primary-hover-rgb: 4, 120, 87;
+  --color-secondary-rgb: 212, 175, 55;
+  --color-secondary-hover-rgb: 181, 136, 66;
+  --color-background-rgb: 248, 250, 252;
+  --color-surface-rgb: 255, 255, 255;
+  --color-card-rgb: 255, 255, 255;
+  --color-muted-rgb: 248, 250, 252;
+  --color-accent-rgb: 241, 245, 249;
+  --color-border-rgb: 203, 213, 225;
+  --color-foreground-rgb: 30, 41, 59;
+  --color-muted-foreground-rgb: 100, 116, 139;
+  --color-destructive-rgb: 220, 38, 38;
+  --color-ring-rgb: 3, 93, 68;
+  --color-white-rgb: 255, 255, 255;
+  --color-black-rgb: 0, 0, 0;
+
   /* ========== LIGHT MODE COLORS ========== */
   /* Backgrounds - High contrast for readability */
   --color-background: #f8fafc;
@@ -168,6 +189,17 @@
 
 /* ========== DARK MODE COLORS - COMPLETELY INDEPENDENT ========== */
 .dark {
+  /* RGB tokens for dark mode (used in in-app browser fallbacks below) */
+  --color-background-rgb: 15, 23, 42;
+  --color-surface-rgb: 30, 41, 59;
+  --color-card-rgb: 30, 41, 59;
+  --color-muted-rgb: 15, 23, 42;
+  --color-accent-rgb: 30, 41, 59;
+  --color-border-rgb: 51, 65, 85;
+  --color-foreground-rgb: 248, 250, 252;
+  --color-muted-foreground-rgb: 148, 163, 184;
+  --color-destructive-rgb: 239, 68, 68;
+
   /* Backgrounds - Dark slate system for better contrast */
   --color-background: #0f172a;
   --color-background-alt: #1e293b;
@@ -478,3 +510,246 @@ td [data-slot="switch"] {
   background-repeat: repeat;
   background-size: 100px 100px;
 }
+
+/* ============================================================================
+ * IN-APP BROWSER COMPATIBILITY LAYER
+ * ----------------------------------------------------------------------------
+ * Facebook / Instagram / Messenger / TikTok / LinkedIn / WeChat in-app
+ * WebViews frequently run on older Chromium (WebView < 111 on Android) or
+ * older iOS WebKit versions that do NOT support:
+ *   - color-mix()   (Chromium 111+, Safari 16.2+)
+ *   - oklch()       (Chromium 111+, Safari 15.4+)
+ *   - 100dvh / 100svh / 100lvh  (Chromium 108+, Safari 15.4+)
+ *
+ * Tailwind v4 emits color-mix() for every opacity modifier (bg-primary/10 etc)
+ * which means those utilities render INVISIBLE / TRANSPARENT on affected
+ * browsers — producing broken layouts where backgrounds vanish, overlays
+ * become fully opaque, and the header "falls" under the content.
+ *
+ * The blocks below ship safe rgba() / vh fallbacks that only apply when the
+ * modern features are unsupported. Modern browsers ignore all of this.
+ * ============================================================================ */
+
+/* ---------- 1. Viewport unit fallbacks (dvh/svh/lvh -> vh) ---------- */
+@supports not (height: 100dvh) {
+  .h-dvh,
+  .h-\[100dvh\] {
+    height: 100vh;
+  }
+  .min-h-dvh,
+  .min-h-\[100dvh\] {
+    min-height: 100vh;
+  }
+  .max-h-dvh,
+  .max-h-\[100dvh\] {
+    max-height: 100vh;
+  }
+}
+
+@supports not (height: 100svh) {
+  .h-svh {
+    height: 100vh;
+  }
+  .min-h-svh {
+    min-height: 100vh;
+  }
+  .max-h-svh {
+    max-height: 100vh;
+  }
+}
+
+@supports not (height: 100lvh) {
+  .h-lvh {
+    height: 100vh;
+  }
+  .min-h-lvh {
+    min-height: 100vh;
+  }
+}
+
+/* ---------- 2. color-mix() fallbacks using rgba() ----------
+ * We target the most commonly used opacity variants of brand, surface,
+ * border and text colors. When color-mix() is unsupported the browser
+ * falls through to these solid rgba() declarations and the layout stays
+ * intact (header visible, overlays translucent, badges readable). */
+@supports not (background-color: color-mix(in srgb, red, blue)) {
+  /* Text selection fallback */
+  ::selection {
+    background: rgba(var(--color-secondary-rgb), 0.35);
+  }
+
+  /* Universal outline fallback (was color-mix) */
+  * {
+    outline-color: rgba(var(--color-ring-rgb, 3, 93, 68), 0.5);
+  }
+
+  /* ===== Primary (background) ===== */
+  .bg-primary\/5   { background-color: rgba(var(--color-primary-rgb), 0.05); }
+  .bg-primary\/10  { background-color: rgba(var(--color-primary-rgb), 0.10); }
+  .bg-primary\/20  { background-color: rgba(var(--color-primary-rgb), 0.20); }
+  .bg-primary\/25  { background-color: rgba(var(--color-primary-rgb), 0.25); }
+  .bg-primary\/30  { background-color: rgba(var(--color-primary-rgb), 0.30); }
+  .bg-primary\/40  { background-color: rgba(var(--color-primary-rgb), 0.40); }
+  .bg-primary\/50  { background-color: rgba(var(--color-primary-rgb), 0.50); }
+  .bg-primary\/60  { background-color: rgba(var(--color-primary-rgb), 0.60); }
+  .bg-primary\/70  { background-color: rgba(var(--color-primary-rgb), 0.70); }
+  .bg-primary\/80  { background-color: rgba(var(--color-primary-rgb), 0.80); }
+  .bg-primary\/90  { background-color: rgba(var(--color-primary-rgb), 0.90); }
+  .bg-primary\/95  { background-color: rgba(var(--color-primary-rgb), 0.95); }
+
+  .hover\:bg-primary\/90:hover { background-color: rgba(var(--color-primary-rgb), 0.90); }
+  .hover\:bg-primary\/80:hover { background-color: rgba(var(--color-primary-rgb), 0.80); }
+
+  /* ===== Primary (border) ===== */
+  .border-primary\/10 { border-color: rgba(var(--color-primary-rgb), 0.10); }
+  .border-primary\/20 { border-color: rgba(var(--color-primary-rgb), 0.20); }
+  .border-primary\/30 { border-color: rgba(var(--color-primary-rgb), 0.30); }
+  .border-primary\/40 { border-color: rgba(var(--color-primary-rgb), 0.40); }
+  .border-primary\/50 { border-color: rgba(var(--color-primary-rgb), 0.50); }
+
+  /* ===== Primary (text / ring) ===== */
+  .text-primary\/80 { color: rgba(var(--color-primary-rgb), 0.80); }
+  .text-primary\/60 { color: rgba(var(--color-primary-rgb), 0.60); }
+  .ring-primary\/20 { --tw-ring-color: rgba(var(--color-primary-rgb), 0.20); }
+  .ring-primary\/50 { --tw-ring-color: rgba(var(--color-primary-rgb), 0.50); }
+
+  /* ===== Secondary ===== */
+  .bg-secondary\/5   { background-color: rgba(var(--color-secondary-rgb), 0.05); }
+  .bg-secondary\/10  { background-color: rgba(var(--color-secondary-rgb), 0.10); }
+  .bg-secondary\/20  { background-color: rgba(var(--color-secondary-rgb), 0.20); }
+  .bg-secondary\/30  { background-color: rgba(var(--color-secondary-rgb), 0.30); }
+  .bg-secondary\/50  { background-color: rgba(var(--color-secondary-rgb), 0.50); }
+  .bg-secondary\/90  { background-color: rgba(var(--color-secondary-rgb), 0.90); }
+
+  .border-secondary\/20 { border-color: rgba(var(--color-secondary-rgb), 0.20); }
+  .border-secondary\/30 { border-color: rgba(var(--color-secondary-rgb), 0.30); }
+  .border-secondary\/40 { border-color: rgba(var(--color-secondary-rgb), 0.40); }
+
+  .text-secondary\/70 { color: rgba(var(--color-secondary-rgb), 0.70); }
+  .text-secondary\/80 { color: rgba(var(--color-secondary-rgb), 0.80); }
+
+  /* ===== Background (with opacity, used for sticky header / modals) ===== */
+  .bg-background\/80 { background-color: rgba(var(--color-background-rgb), 0.80); }
+  .bg-background\/90 { background-color: rgba(var(--color-background-rgb), 0.90); }
+  .bg-background\/95 { background-color: rgba(var(--color-background-rgb), 0.95); }
+  .bg-background\/50 { background-color: rgba(var(--color-background-rgb), 0.50); }
+  .bg-background\/60 { background-color: rgba(var(--color-background-rgb), 0.60); }
+  .bg-background\/70 { background-color: rgba(var(--color-background-rgb), 0.70); }
+  .dark .dark\:bg-background\/80 { background-color: rgba(var(--color-background-rgb), 0.80); }
+  .dark .dark\:bg-background\/90 { background-color: rgba(var(--color-background-rgb), 0.90); }
+  .dark .dark\:bg-background\/95 { background-color: rgba(var(--color-background-rgb), 0.95); }
+
+  /* ===== Card / Surface / Muted / Accent ===== */
+  .bg-card\/30 { background-color: rgba(var(--color-card-rgb), 0.30); }
+  .bg-card\/40 { background-color: rgba(var(--color-card-rgb), 0.40); }
+  .bg-card\/50 { background-color: rgba(var(--color-card-rgb), 0.50); }
+  .bg-card\/60 { background-color: rgba(var(--color-card-rgb), 0.60); }
+  .bg-card\/80 { background-color: rgba(var(--color-card-rgb), 0.80); }
+  .dark .dark\:bg-card\/30 { background-color: rgba(var(--color-card-rgb), 0.30); }
+  .dark .dark\:bg-card\/40 { background-color: rgba(var(--color-card-rgb), 0.40); }
+
+  .bg-muted\/10 { background-color: rgba(var(--color-muted-rgb), 0.10); }
+  .bg-muted\/20 { background-color: rgba(var(--color-muted-rgb), 0.20); }
+  .bg-muted\/30 { background-color: rgba(var(--color-muted-rgb), 0.30); }
+  .bg-muted\/50 { background-color: rgba(var(--color-muted-rgb), 0.50); }
+  .hover\:bg-muted\/30:hover { background-color: rgba(var(--color-muted-rgb), 0.30); }
+
+  .bg-accent\/50 { background-color: rgba(var(--color-accent-rgb), 0.50); }
+
+  /* ===== Borders (generic) ===== */
+  .border-border\/30 { border-color: rgba(var(--color-border-rgb), 0.30); }
+  .border-border\/50 { border-color: rgba(var(--color-border-rgb), 0.50); }
+  .border-border\/60 { border-color: rgba(var(--color-border-rgb), 0.60); }
+  .dark .dark\:border-border\/30 { border-color: rgba(var(--color-border-rgb), 0.30); }
+
+  /* ===== Muted Foreground (text) ===== */
+  .text-muted-foreground\/70 { color: rgba(var(--color-muted-foreground-rgb), 0.70); }
+  .text-muted-foreground\/80 { color: rgba(var(--color-muted-foreground-rgb), 0.80); }
+
+  /* ===== Destructive / Ring ===== */
+  .bg-destructive\/10 { background-color: rgba(var(--color-destructive-rgb), 0.10); }
+  .bg-destructive\/20 { background-color: rgba(var(--color-destructive-rgb), 0.20); }
+  .text-destructive\/80 { color: rgba(var(--color-destructive-rgb), 0.80); }
+
+  /* ===== White/Black overlays (used in hero / cards with images) ===== */
+  .bg-white\/5  { background-color: rgba(255, 255, 255, 0.05); }
+  .bg-white\/10 { background-color: rgba(255, 255, 255, 0.10); }
+  .bg-white\/20 { background-color: rgba(255, 255, 255, 0.20); }
+  .bg-white\/30 { background-color: rgba(255, 255, 255, 0.30); }
+  .hover\:bg-white\/20:hover { background-color: rgba(255, 255, 255, 0.20); }
+  .border-white\/10 { border-color: rgba(255, 255, 255, 0.10); }
+  .border-white\/20 { border-color: rgba(255, 255, 255, 0.20); }
+  .border-white\/30 { border-color: rgba(255, 255, 255, 0.30); }
+
+  .bg-black\/20 { background-color: rgba(0, 0, 0, 0.20); }
+  .bg-black\/30 { background-color: rgba(0, 0, 0, 0.30); }
+  .bg-black\/40 { background-color: rgba(0, 0, 0, 0.40); }
+  .bg-black\/50 { background-color: rgba(0, 0, 0, 0.50); }
+  .bg-black\/60 { background-color: rgba(0, 0, 0, 0.60); }
+
+  /* ===== Themed helper colors used on home/about pages ===== */
+  .bg-emerald-500\/20 { background-color: rgba(16, 185, 129, 0.20); }
+  .bg-emerald-900 { background-color: #064e3b; }
+  .border-emerald-400\/30 { border-color: rgba(52, 211, 153, 0.30); }
+
+  .bg-amber-50 { background-color: #fffbeb; }
+  .dark .dark\:bg-amber-900\/30 { background-color: rgba(120, 53, 15, 0.30); }
+
+  .bg-blue-50 { background-color: #eff6ff; }
+  .dark .dark\:bg-blue-900\/30 { background-color: rgba(30, 58, 138, 0.30); }
+
+  .bg-red-50 { background-color: #fef2f2; }
+  .dark .dark\:bg-red-900\/30 { background-color: rgba(127, 29, 29, 0.30); }
+
+  .bg-green-50 { background-color: #f0fdf4; }
+  .dark .dark\:bg-green-900\/30 { background-color: rgba(20, 83, 45, 0.30); }
+  .bg-green-100 { background-color: #dcfce7; }
+
+  /* Admin-side hex helpers that reference oklch via Tailwind default palette */
+  .bg-gray-50 { background-color: #f9fafb; }
+  .bg-gray-100 { background-color: #f3f4f6; }
+  .bg-gray-200 { background-color: #e5e7eb; }
+  .text-gray-300 { color: #d1d5db; }
+  .text-gray-400 { color: #9ca3af; }
+  .text-gray-500 { color: #6b7280; }
+  .text-gray-600 { color: #4b5563; }
+  .text-gray-700 { color: #374151; }
+  .text-gray-800 { color: #1f2937; }
+  .text-gray-900 { color: #111827; }
+  .border-gray-100 { border-color: #f3f4f6; }
+  .border-gray-200 { border-color: #e5e7eb; }
+}
+
+/* ---------- 3. Extra safety: force solid backgrounds on sticky header
+ * when backdrop-filter is unsupported. This prevents the header from
+ * appearing transparent (and content "bleeding" into / overlapping it)
+ * inside older in-app WebViews. */
+@supports not ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+  header.sticky,
+  .sticky.top-0 {
+    background-color: var(--color-background) !important;
+  }
+}
+
+/* ---------- 4. Prevent Material Icons ligature text from flashing as raw
+ * letters ("mail", "search"...) inside in-app browsers that block Google
+ * Fonts requests. We keep icons hidden but also clear their intrinsic
+ * width so they don't create layout gaps. */
+.material-icons-outlined:not(.fonts-loaded-icon) {
+  font-feature-settings: 'liga';
+}
+
+/* Once JS flips `html.fonts-loaded`, icons reveal. After a hard timeout
+ * (see layout.tsx) we still reveal them in case the font itself failed
+ * to load, so at worst the user sees the ligature word instead of a
+ * blank slot — far better than a broken-looking UI. */
+html.fonts-loaded-fallback .material-icons-outlined {
+  font-size: inherit !important;
+  line-height: inherit !important;
+  /* When the font truly failed to load, shrink the ligature text so it
+     doesn't dominate the layout. */
+  font-size: 14px !important;
+  color: currentColor;
+  opacity: 0.6;
+}
+

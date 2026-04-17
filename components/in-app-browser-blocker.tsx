@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react"
 import { ExternalLink, Copy, Check } from "lucide-react"
 
+// مفتاح التخزين المحلي: لو المستخدم اختار يتخطى التحذير،
+// نفتكر اختياره للجلسة الحالية فقط عشان ميضايقوش في كل صفحة.
+const SKIP_STORAGE_KEY = "iab-blocker-skipped"
+
 /**
  * Detects in-app browsers (Facebook, Instagram, etc.) and prompts user to open in external browser
  */
@@ -16,23 +20,63 @@ export function InAppBrowserBlocker() {
 
         setCurrentUrl(window.location.href)
 
+        // لو المستخدم اختار يتخطى التحذير في نفس الجلسة، ما نعرضوش تاني.
+        try {
+            if (window.sessionStorage.getItem(SKIP_STORAGE_KEY) === "1") {
+                return
+            }
+        } catch {
+            // sessionStorage قد يكون غير متاح في بعض المتصفحات الداخلية
+        }
+
         const ua = navigator.userAgent || (navigator as any).vendor || (window as any).opera || ""
-        
-        // Detect common in-app browsers
+
+        // Expanded list of known in-app browser signatures. These WebViews
+        // typically run an outdated Chromium/WebKit and don't play nicely
+        // with modern CSS (color-mix, oklch, dvh…) or PDF.js workers.
         const rules = [
-            'WebView', 'Android.*Version/[0-9].[0-9]', 
-            'FBAV', 'FBAN', // Facebook
-            'Instagram', 
-            'Line', 
-            'Twitter', 
-            'Snapchat', 
-            'Messenger', 
-            'TikTok', 'Bytedance', 
-            'MicroMessenger', // WeChat
-            'LinkedInApp', 
+            // Facebook family
+            'FBAV', 'FBAN', 'FBIOS', 'FB_IAB', 'FB4A', 'FBSV', 'FBDV',
+            // Instagram
+            'Instagram',
+            // Messenger
+            'Messenger', 'MessengerLite', 'Messenger for',
+            // LINE
+            '\\bLine\\/', 'LineApp',
+            // Twitter / X
+            'Twitter', 'TwitterAndroid',
+            // Snapchat
+            'Snapchat',
+            // TikTok / Douyin
+            'TikTok', 'Bytedance', 'BytedanceWebview', 'trill',
+            // WeChat / QQ / Weibo
+            'MicroMessenger', 'QQ\\/', 'Weibo',
+            // LinkedIn
+            'LinkedInApp',
+            // Pinterest
+            'Pinterest',
+            // KAKAOTALK
+            'KAKAOTALK',
+            // Google News / Google App in-app
+            'GSA\\/',
+            // Generic WebView markers (last resort)
+            '; wv\\)',
+            'WebView',
         ]
-        
-        const isInAppBrowser = new RegExp(rules.join('|'), 'i').test(ua)
+
+        // Regex catches the signatures above in the UA string.
+        const inAppRegex = new RegExp(rules.join('|'), 'i')
+        let isInAppBrowser = inAppRegex.test(ua)
+
+        // Extra heuristic: Android UA that is missing the "Chrome/" token is
+        // almost always a restricted WebView. Real Chrome, Samsung Internet,
+        // Firefox, Edge all include their own identifiers.
+        if (!isInAppBrowser && /Android/i.test(ua)) {
+            const hasKnownBrowser = /Chrome\/|SamsungBrowser|Firefox|EdgA|OPR\/|UCBrowser|YaBrowser|MiuiBrowser|HuaweiBrowser|DuckDuckGo/i.test(ua)
+            if (!hasKnownBrowser) {
+                isInAppBrowser = true
+            }
+        }
 
         if (isInAppBrowser) {
             setIsBlocked(true)
@@ -71,6 +115,17 @@ export function InAppBrowserBlocker() {
                 setTimeout(() => setCopied(false), 2000)
             } catch (err) {}
         }
+    }
+
+    // تخطي التحذير ومتابعة التصفح داخل التطبيق. بنحفظ الاختيار في
+    // sessionStorage عشان ميرجعش يظهر مع كل تنقل بين الصفحات.
+    const skipBlocker = () => {
+        try {
+            window.sessionStorage.setItem(SKIP_STORAGE_KEY, "1")
+        } catch {
+            // لو التخزين مش متاح، على الأقل نخفي الشاشة الحالية.
+        }
+        setIsBlocked(false)
     }
 
     if (isBlocked) {
@@ -118,6 +173,20 @@ export function InAppBrowserBlocker() {
                                 {currentUrl}
                             </span>
                         </div>
+                    </div>
+
+                    {/* زر تخطي التحذير ومتابعة التصفح داخل التطبيق الحالي.
+                        بيتحفظ الاختيار في sessionStorage حتى نهاية الجلسة. */}
+                    <div className="pt-2">
+                        <button
+                            onClick={skipBlocker}
+                            className="w-full text-muted-foreground hover:text-foreground py-2 text-sm underline-offset-4 hover:underline transition-colors"
+                        >
+                            المتابعة والتصفح داخل التطبيق على أي حال
+                        </button>
+                        <p className="text-[11px] text-muted-foreground/70 mt-1 leading-relaxed">
+                            قد تظهر بعض المشاكل في الاستايل أو عرض الملفات
+                        </p>
                     </div>
                 </div>
             </div>

@@ -221,7 +221,21 @@ export default async function RootLayout({
         {/* RSS autodiscovery helps Google News / readers surface new posts. */}
         <link rel="alternate" type="application/rss+xml" title="آخر المقالات" href="/feed.xml" />
 
-        {/* Preload Material Icons to prevent FOUC (Flash of Unstyled Content) */}
+        {/* Material Icons loading is network-sensitive. Inside in-app browsers
+            (Facebook, Instagram, Messenger, TikTok, WeChat…) Google Fonts is
+            sometimes slow or silently blocked, which leaves every
+            <span class="material-icons-outlined"> either invisible forever
+            or rendered as raw ligature text ("mail", "search"…).
+
+            Strategy:
+              - Preconnect + preload the stylesheet for a fast happy-path.
+              - Serve as "print" first so it never blocks render, then flip to
+                "all" once loaded.
+              - Hide icon text only until EITHER the font loads OR a hard
+                timeout fires (3s). After the timeout we reveal the icons
+                with a muted ligature fallback (see globals.css
+                .fonts-loaded-fallback rule) so the UI stays usable instead
+                of showing blank squares. */}
         <link
           rel="preload"
           href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
@@ -231,41 +245,86 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
           rel="stylesheet"
         />
-        {/* Hide icon text until font loads */}
+        {/* Hide icon ligature text until font loads OR timeout fires */}
         <style dangerouslySetInnerHTML={{
           __html: `
-          /* Hide icons until Material Icons font is loaded */
+          /* Default state: hide ligature text so raw words don't flash */
           .material-icons-outlined {
             font-size: 0 !important;
             line-height: 0;
+            display: inline-block;
+            min-width: 1em;
+            min-height: 1em;
           }
           .material-icons-outlined::before {
             font-size: 24px;
             line-height: 1;
           }
-          /* When font is loaded, show normally */
-          .fonts-loaded .material-icons-outlined {
+          /* Happy path: real font loaded -> show icons as designed. */
+          html.fonts-loaded .material-icons-outlined {
             font-size: inherit !important;
             line-height: inherit;
+            min-width: 0;
+            min-height: 0;
           }
         `}} />
         <script dangerouslySetInnerHTML={{
           __html: `
           (function() {
-            if (document.fonts && document.fonts.check) {
-              function checkFont() {
-                if (document.fonts.check('24px "Material Icons Outlined"')) {
-                  document.documentElement.classList.add('fonts-loaded');
-                } else {
-                  requestAnimationFrame(checkFont);
-                }
-              }
-              checkFont();
-            } else {
-              // Fallback: add class after a delay
-              setTimeout(function() {
-                document.documentElement.classList.add('fonts-loaded');
+            var docEl = document.documentElement;
+            var settled = false;
+
+            function markLoaded() {
+              if (settled) return;
+              settled = true;
+              docEl.classList.add('fonts-loaded');
+            }
+
+            function markFallback() {
+              if (settled) return;
+              settled = true;
+              // Icons will show as small muted ligature text (see globals.css
+              // .fonts-loaded-fallback rule). Far better than empty squares.
+              docEl.classList.add('fonts-loaded-fallback');
+            }
+
+            // Hard ceiling: if we can't confirm the font within 3s we assume
+            // the in-app browser blocked it and fall back to readable text.
+            var timeoutId = setTimeout(markFallback, 3000);
+
+            function clearAndLoad() {
+              clearTimeout(timeoutId);
+              markLoaded();
+            }
+
+            if (document.fonts && document.fonts.ready && document.fonts.check) {
+              // Fast path: Font Loading API
+              document.fonts.ready.then(function () {
+                try {
+                  if (document.fonts.check('24px "Material Icons Outlined"')) {
+                    clearAndLoad();
+                  }
+                } catch (e) { /* swallow and let timeout decide */ }
+              }).catch(function () { /* swallow */ });
+
+              // Also poll briefly in case .ready resolves before the specific
+              // font is registered (WebKit quirk).
+              var attempts = 0;
+              var poll = setInterval(function () {
+                attempts++;
+                try {
+                  if (document.fonts.check('24px "Material Icons Outlined"')) {
+                    clearInterval(poll);
+                    clearAndLoad();
+                  } else if (attempts > 30) {
+                    clearInterval(poll);
+                  }
+                } catch (e) { clearInterval(poll); }
               }, 100);
+            } else {
+              // Ancient WebView: just reveal after a short delay and hope
+              // the font is there. If not, fonts-loaded-fallback kicks in.
+              setTimeout(clearAndLoad, 500);
             }
           })();
         `}} />
