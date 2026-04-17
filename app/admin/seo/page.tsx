@@ -103,8 +103,11 @@ export default function SEOManagementPage() {
   // Indexing state
   const [indexingUrls, setIndexingUrls] = useState<{ url: string; type: string }[]>([])
   const [indexingLoading, setIndexingLoading] = useState(false)
-  const [pingResults, setPingResults] = useState<{ url: string; google?: string; bing?: string }[]>([])
+  const [pingResults, setPingResults] = useState<{ url: string; indexnow?: string; google?: string }[]>([])
+  const [pingSummary, setPingSummary] = useState<{ status: number; submitted: number; body?: string } | null>(null)
   const [selectedUrls, setSelectedUrls] = useState<Set<string>>(new Set())
+  const [diagnostic, setDiagnostic] = useState<{ endpoint: string; host: string; keyLocation: string; keyPreview: string } | null>(null)
+  const [diagnosticLoading, setDiagnosticLoading] = useState(false)
 
   // Page-specific SEO
   const [pageSEOList, setPageSEOList] = useState<PageSEO[]>([])
@@ -302,10 +305,10 @@ export default function SEOManagementPage() {
     setAuditResults([])
     try {
       const [sermonsRes, lessonsRes, articlesRes, booksRes, mediaRes] = await Promise.all([
-        supabase.from("sermons").select("id, title, description, thumbnail_path, tags, content").eq("publish_status", "published"),
-        supabase.from("lessons").select("id, title, description, thumbnail_path, tags, content").eq("publish_status", "published"),
-        supabase.from("articles").select("id, title, content, thumbnail, featured_image, tags, excerpt").eq("publish_status", "published"),
-        supabase.from("books").select("id, title, description, cover_image, tags").eq("publish_status", "published"),
+        supabase.from("sermons").select("id, slug, title, description, thumbnail_path, tags, content").eq("publish_status", "published"),
+        supabase.from("lessons").select("id, slug, title, description, thumbnail_path, tags, content").eq("publish_status", "published"),
+        supabase.from("articles").select("id, slug, title, content, thumbnail, featured_image, tags, excerpt").eq("publish_status", "published"),
+        supabase.from("books").select("id, slug, title, description, cover_image, tags").eq("publish_status", "published"),
         supabase.from("media").select("id, title, description, thumbnail, tags").eq("publish_status", "published"),
       ])
 
@@ -320,12 +323,12 @@ export default function SEOManagementPage() {
         const cleanContent = content.replace(/<[^>]*>/g, "")
         const wordCount = cleanContent.split(/\s+/).filter(Boolean).length
 
-        // Check title
+        // Check title (Google truncates titles around 50–60 chars, 70 is the hard ceiling)
         if (!title) issues.push("لا يوجد عنوان")
         else if (title.length < 10) issues.push("العنوان قصير جداً (أقل من 10 أحرف)")
         else if (title.length > 70) issues.push("العنوان طويل جداً (أكثر من 70 حرف)")
 
-        // Check description
+        // Check description (Google shows ~155–160 chars of meta description)
         const hasDescription = cleanDesc.length > 0
         if (!hasDescription) issues.push("لا يوجد وصف")
         else if (cleanDesc.length < 50) issues.push("الوصف قصير (أقل من 50 حرف)")
@@ -343,13 +346,21 @@ export default function SEOManagementPage() {
         // Check content length
         if (type !== "book" && type !== "media" && wordCount < 100) issues.push("المحتوى قصير (أقل من 100 كلمة)")
 
+        // Check slug — missing slug means the URL has to fall back to a UUID
+        // which is terrible for SEO.
+        if (type !== "media" && !item.slug) {
+          issues.push("لا يوجد slug (الرابط يستخدم UUID)")
+        }
+
         // Calculate score
-        const totalChecks = 5
+        const totalChecks = type !== "media" ? 6 : 5
         const passedChecks = totalChecks - issues.length
-        const score = Math.round((passedChecks / totalChecks) * 100)
+        const score = Math.max(0, Math.round((passedChecks / totalChecks) * 100))
+
+        const identifier = item.slug ? encodeURI(item.slug) : item.id
 
         results.push({
-          id: item.id, title, type, typeName, url: `${urlPrefix}/${item.id}`,
+          id: item.id, title, type, typeName, url: `${urlPrefix}/${identifier}`,
           issues, score,
           hasDescription, hasImage, hasTags,
           titleLength: title.length, descriptionLength: cleanDesc.length,
@@ -443,12 +454,16 @@ export default function SEOManagementPage() {
   async function loadIndexingUrls() {
     setIndexingLoading(true)
     setPingResults([])
+    setPingSummary(null)
     try {
+      // Match sitemap & canonical URL rules exactly: prefer slug, fall back to id.
+      // Previous version always used id, which caused 301 redirects on every
+      // crawl and wasted Google's crawl budget.
       const [sermonsRes, lessonsRes, articlesRes, booksRes, mediaRes] = await Promise.all([
-        supabase.from("sermons").select("id, title").eq("publish_status", "published"),
-        supabase.from("lessons").select("id, title").eq("publish_status", "published"),
-        supabase.from("articles").select("id, title").eq("publish_status", "published"),
-        supabase.from("books").select("id, title").eq("publish_status", "published"),
+        supabase.from("sermons").select("id, slug, title").eq("publish_status", "published"),
+        supabase.from("lessons").select("id, slug, title").eq("publish_status", "published"),
+        supabase.from("articles").select("id, slug, title").eq("publish_status", "published"),
+        supabase.from("books").select("id, slug, title").eq("publish_status", "published"),
         supabase.from("media").select("id, title").eq("publish_status", "published"),
       ])
 
@@ -461,17 +476,43 @@ export default function SEOManagementPage() {
         { url: "/books", type: "الكتب" },
         { url: "/videos", type: "المرئيات" },
       ]
-      sermonsRes.data?.forEach(s => urls.push({ url: `/khutba/${s.id}`, type: `خطبة: ${s.title?.slice(0, 30) || ''}` }))
-      lessonsRes.data?.forEach(l => urls.push({ url: `/dars/${l.id}`, type: `درس: ${l.title?.slice(0, 30) || ''}` }))
-      articlesRes.data?.forEach(a => urls.push({ url: `/articles/${a.id}`, type: `مقال: ${a.title?.slice(0, 30) || ''}` }))
-      booksRes.data?.forEach(b => urls.push({ url: `/books/${b.id}`, type: `كتاب: ${b.title?.slice(0, 30) || ''}` }))
-      mediaRes.data?.forEach(m => urls.push({ url: `/videos/${m.id}`, type: `فيديو: ${m.title?.slice(0, 30) || ''}` }))
+      const toIdent = (row: { slug?: string | null; id: string }) =>
+        row.slug ? encodeURI(row.slug) : row.id
+      sermonsRes.data?.forEach((s: any) => urls.push({ url: `/khutba/${toIdent(s)}`, type: `خطبة: ${s.title?.slice(0, 30) || ''}` }))
+      lessonsRes.data?.forEach((l: any) => urls.push({ url: `/dars/${toIdent(l)}`, type: `درس: ${l.title?.slice(0, 30) || ''}` }))
+      articlesRes.data?.forEach((a: any) => urls.push({ url: `/articles/${toIdent(a)}`, type: `مقال: ${a.title?.slice(0, 30) || ''}` }))
+      booksRes.data?.forEach((b: any) => urls.push({ url: `/books/${toIdent(b)}`, type: `كتاب: ${b.title?.slice(0, 30) || ''}` }))
+      mediaRes.data?.forEach((m: any) => urls.push({ url: `/videos/${m.id}`, type: `فيديو: ${m.title?.slice(0, 30) || ''}` }))
 
       setIndexingUrls(urls)
     } catch {
       setMessage("حدث خطأ في تحميل الروابط")
     }
     setIndexingLoading(false)
+  }
+
+  async function runDiagnostic() {
+    setDiagnosticLoading(true)
+    try {
+      const res = await fetch("/api/seo/ping", { method: "GET" })
+      const json = await res.json()
+      setDiagnostic(json)
+
+      // Also verify the key file is reachable
+      try {
+        const keyRes = await fetch(json.keyLocation)
+        if (!keyRes.ok) {
+          setMessage(`تحذير: مفتاح IndexNow غير قابل للوصول عبر ${json.keyLocation}`)
+        } else {
+          setMessage("تم التحقق: IndexNow مهيأ بشكل صحيح ومفتاح التحقق متاح")
+        }
+      } catch {
+        setMessage("تحذير: تعذّر التحقق من مفتاح IndexNow")
+      }
+    } catch {
+      setMessage("فشل الاتصال بخدمة IndexNow")
+    }
+    setDiagnosticLoading(false)
   }
 
   async function pingSelectedUrls() {
@@ -481,6 +522,7 @@ export default function SEOManagementPage() {
     }
     setIndexingLoading(true)
     setPingResults([])
+    setPingSummary(null)
     try {
       const res = await fetch("/api/seo/ping", {
         method: "POST",
@@ -489,7 +531,12 @@ export default function SEOManagementPage() {
       })
       const json = await res.json()
       setPingResults(json.results || [])
-      setMessage(json.message || "تم الإرسال")
+      setPingSummary(
+        json.indexnow
+          ? { status: json.indexnow.status, submitted: json.indexnow.submitted, body: json.indexnow.body }
+          : null
+      )
+      setMessage(json.message || (json.success ? "تم الإرسال" : "فشل الإرسال"))
     } catch {
       setMessage("حدث خطأ أثناء الإرسال")
     }
@@ -1538,7 +1585,11 @@ Sitemap: https://example.com/sitemap.xml`}
                 <Radar className="h-5 w-5 text-primary" />
                 مراقب الفهرسة
               </h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <Button variant="outline" onClick={runDiagnostic} disabled={diagnosticLoading}>
+                  <Shield className={`h-4 w-4 ml-2 ${diagnosticLoading ? "animate-spin" : ""}`} />
+                  فحص التهيئة
+                </Button>
                 <Button variant="outline" onClick={loadIndexingUrls} disabled={indexingLoading}>
                   <RefreshCw className={`h-4 w-4 ml-2 ${indexingLoading ? "animate-spin" : ""}`} />
                   تحديث القائمة
@@ -1553,27 +1604,115 @@ Sitemap: https://example.com/sitemap.xml`}
             <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
               <h3 className="font-bold text-amber-800 mb-2 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                كيف تعمل الفهرسة؟
+                كيف تعمل الفهرسة فعلياً؟
               </h3>
               <ul className="text-sm text-amber-700 space-y-1 list-disc list-inside">
-                <li>يتم إرسال إشعار لـ Google و Bing بوجود محتوى جديد أو محدث</li>
-                <li>هذا لا يضمن الفهرسة الفورية لكنه يسرّع العملية</li>
-                <li>لا تستخدم هذه الأداة بشكل مفرط (مرة يومياً كافية)</li>
+                <li>
+                  <strong>IndexNow:</strong> يتم إرسال الروابط مباشرةً إلى Bing و Yandex و Seznam و Yep و Naver عبر بروتوكول <code dir="ltr">IndexNow.org</code> الرسمي.
+                </li>
+                <li>
+                  <strong>Google:</strong> أوقفت Google خدمة <code dir="ltr">/ping?sitemap=</code> عام 2023، ولا توفّر API عام لفهرسة المحتوى العادي. الطريقة الوحيدة المضمونة هي فتح
+                  {" "}
+                  <a href="https://search.google.com/search-console" target="_blank" rel="noreferrer noopener" className="underline font-bold">Google Search Console</a>
+                  {" "}
+                  ثم استخدام <em>URL Inspection → Request Indexing</em>، مع الاعتماد على sitemap.xml للزحف التلقائي.
+                </li>
+                <li>مرة واحدة يومياً كافية — لا ترسل نفس الرابط بشكل متكرر.</li>
               </ul>
             </div>
 
+            {/* Diagnostic info */}
+            {diagnostic && (
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  تهيئة IndexNow
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-blue-700 font-semibold block text-xs">Endpoint</span>
+                    <code className="text-xs bg-white px-2 py-1 rounded block truncate" dir="ltr">{diagnostic.endpoint}</code>
+                  </div>
+                  <div>
+                    <span className="text-blue-700 font-semibold block text-xs">Host المعلن</span>
+                    <code className="text-xs bg-white px-2 py-1 rounded block truncate" dir="ltr">{diagnostic.host}</code>
+                  </div>
+                  <div className="md:col-span-2">
+                    <span className="text-blue-700 font-semibold block text-xs">ملف التحقق (keyLocation)</span>
+                    <a href={diagnostic.keyLocation} target="_blank" rel="noreferrer noopener" className="text-xs bg-white px-2 py-1 rounded block truncate text-blue-600 hover:underline" dir="ltr">
+                      {diagnostic.keyLocation} ↗
+                    </a>
+                  </div>
+                  <div>
+                    <span className="text-blue-700 font-semibold block text-xs">المفتاح</span>
+                    <code className="text-xs bg-white px-2 py-1 rounded block" dir="ltr">{diagnostic.keyPreview}</code>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Ping Summary */}
+            {pingSummary && (
+              <div className={`rounded-xl p-4 border ${pingSummary.status === 200 || pingSummary.status === 202
+                ? "bg-green-50 border-green-200"
+                : "bg-red-50 border-red-200"
+                }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className={`font-bold ${pingSummary.status === 200 || pingSummary.status === 202 ? "text-green-800" : "text-red-800"}`}>
+                      استجابة IndexNow
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      HTTP {pingSummary.status || "n/a"} — تم إرسال {pingSummary.submitted} رابط
+                    </p>
+                  </div>
+                  <div className="text-xs">
+                    {pingSummary.status === 200 && <span className="text-green-700">OK (مقبول)</span>}
+                    {pingSummary.status === 202 && <span className="text-green-700">Accepted (قيد المعالجة)</span>}
+                    {pingSummary.status === 400 && <span className="text-red-700">Bad Request</span>}
+                    {pingSummary.status === 403 && <span className="text-red-700">مفتاح غير صالح</span>}
+                    {pingSummary.status === 422 && <span className="text-red-700">الروابط لا تطابق النطاق</span>}
+                    {pingSummary.status === 429 && <span className="text-red-700">عدد محاولات مرتفع</span>}
+                  </div>
+                </div>
+                {pingSummary.body && pingSummary.body.length > 0 && (
+                  <details className="mt-2 text-xs">
+                    <summary className="cursor-pointer text-muted-foreground">تفاصيل الاستجابة</summary>
+                    <pre className="mt-2 p-2 bg-muted rounded overflow-x-auto" dir="ltr">{pingSummary.body}</pre>
+                  </details>
+                )}
+              </div>
+            )}
+
             {/* Ping Results */}
             {pingResults.length > 0 && (
-              <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                <h3 className="font-bold text-green-800 mb-3">نتائج الإرسال</h3>
-                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+              <div className="bg-muted/30 rounded-xl p-4 border">
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  نتائج الإرسال ({pingResults.length} رابط)
+                </h3>
+                <div className="space-y-2 max-h-[240px] overflow-y-auto">
                   {pingResults.map((r, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      {r.google === "success" ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
-                      <span className="text-green-700" dir="ltr">{r.url}</span>
+                    <div key={i} className="flex items-center gap-3 text-sm p-2 rounded bg-background">
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                        IndexNow:
+                        {r.indexnow === "success" ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-600" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-red-600" />
+                        )}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600" title="Google لا تدعم الإرسال المباشر">
+                        Google:
+                        <AlertTriangle className="h-3 w-3" />
+                      </span>
+                      <span className="truncate flex-1 text-xs" dir="ltr">{r.url}</span>
                     </div>
                   ))}
                 </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  ⓘ Google لا توفّر API عام للفهرسة — استخدم Search Console للفهرسة اليدوية.
+                </p>
               </div>
             )}
 
@@ -1602,7 +1741,12 @@ Sitemap: https://example.com/sitemap.xml`}
                         <code className="text-xs bg-muted px-2 py-0.5 rounded block truncate" dir="ltr">{item.url}</code>
                         <span className="text-xs text-muted-foreground">{item.type}</span>
                       </div>
-                      <a href={`https://elsayed-mourad.online${item.url}`} target="_blank" rel="noreferrer noopener" className="text-muted-foreground hover:text-primary">
+                      <a
+                        href={`${(settings.canonical_url || "https://elsayed-mourad.online").replace(/\/$/, "")}${item.url}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="text-muted-foreground hover:text-primary"
+                      >
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     </label>

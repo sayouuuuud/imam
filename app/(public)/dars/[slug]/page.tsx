@@ -36,15 +36,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!lesson) return { title: "الدرس غير موجود" }
 
     const ogImage = getLessonOgImage(lesson)
+    const canonicalPath = `/dars/${lesson.slug || slug}`
 
     return {
         title: `${lesson.title} | الشيخ السيد مراد سلامة`,
         description: lesson.description ? lesson.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined,
+        alternates: {
+            canonical: canonicalPath,
+        },
         openGraph: {
             title: lesson.title,
             description: lesson.description ? lesson.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined,
             images: [ogImage],
             type: "article",
+            url: canonicalPath,
         },
         twitter: {
             card: "summary_large_image",

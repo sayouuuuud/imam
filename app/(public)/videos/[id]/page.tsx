@@ -23,15 +23,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!video) return { title: "الفيديو غير موجود" }
 
   const ogImage = getVideoOgImage(video)
+  const canonicalPath = `/videos/${id}`
 
   return {
     title: `${video.title} | الشيخ السيد مراد سلامة`,
     description: video.description ? stripHtml(video.description).slice(0, 160) : undefined,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title: video.title,
       description: video.description ? stripHtml(video.description).slice(0, 160) : undefined,
       images: [ogImage],
       type: "video.other",
+      url: canonicalPath,
     },
     twitter: {
       card: "summary_large_image",

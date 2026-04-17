@@ -39,15 +39,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!sermon) return { title: "الخطبة غير موجودة" }
 
     const ogImage = getSermonOgImage(sermon)
+    // Always prefer the slug for the canonical URL. Falls back to the raw
+    // segment so legacy UUID links still produce a valid canonical.
+    const canonicalPath = `/khutba/${sermon.slug || slug}`
 
     return {
         title: `${sermon.title} | الشيخ السيد مراد سلامة`,
         description: sermon.description ? sermon.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined,
+        alternates: {
+            canonical: canonicalPath,
+        },
         openGraph: {
             title: sermon.title,
             description: sermon.description ? sermon.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined,
             images: [ogImage],
             type: "article",
+            url: canonicalPath,
         },
         twitter: {
             card: "summary_large_image",

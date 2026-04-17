@@ -25,14 +25,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const ogImage = getArticleOgImage(article)
 
+  const canonicalPath = `/articles/${id}`
+
   return {
     title: `${article.title} | الشيخ السيد مراد سلامة`,
     description: article.content ? stripHtml(article.content).slice(0, 160) : undefined,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title: article.title,
       description: article.content ? stripHtml(article.content).slice(0, 160) : undefined,
       images: [ogImage],
       type: "article",
+      url: canonicalPath,
     },
     twitter: {
       card: "summary_large_image",
