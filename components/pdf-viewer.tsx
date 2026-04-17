@@ -187,71 +187,65 @@ export function PDFViewer({ fileKey, title, className = "", bookId }: PDFViewerP
   //   - Android Chrome (inline PDFs)
   //   - Other WebViews that at least support iframe navigation to a PDF
   // If nothing renders, the inner <div> with the download links shows through.
+  // في المتصفحات الداخلية (فيسبوك/انستجرام)، نعرض فوراً صفحة تحميل بسيطة
+  // بدون محاولة تحميل PDF.js أو iframe لأنهم مبيشتغلوش.
   if (useNativeFallback && finalUrl) {
+    const downloadUrl = bookId 
+      ? `/api/download-pdf?url=${encodeURIComponent(fileKey)}&id=${bookId}` 
+      : finalUrl
+
     return (
-      <div className={`flex flex-col h-full bg-muted ${className}`}>
-        <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-card border-b border-border shadow-sm z-10 sticky top-0">
-          <span className="text-sm font-medium truncate max-w-[60%]">{title}</span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(finalUrl, '_blank', 'noopener,noreferrer')}
-              title="فتح في نافذة جديدة"
-            >
-              <ExternalLink className="h-4 w-4 ml-1" />
-              <span className="text-xs">فتح</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              title="تحميل الملف"
-            >
-              <a
-                href={bookId ? `/api/download-pdf?url=${encodeURIComponent(fileKey)}&id=${bookId}` : finalUrl}
-                download={`${title || 'book'}.pdf`}
-              >
-                <Download className="h-4 w-4 ml-1" />
-                <span className="text-xs">تحميل</span>
-              </a>
-            </Button>
-          </div>
+      <div 
+        className={`flex flex-col h-full ${className}`}
+        style={{ backgroundColor: '#f1f5f9' }}
+      >
+        {/* Header with hex colors */}
+        <div 
+          className="flex flex-wrap items-center justify-between gap-2 p-3 border-b shadow-sm z-10 sticky top-0"
+          style={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0' }}
+        >
+          <span className="text-sm font-medium truncate max-w-[60%]" style={{ color: '#1e293b' }}>
+            {title}
+          </span>
         </div>
 
-        <div className="flex-1 bg-muted relative overflow-hidden">
-          {/* <object> lets the browser use its native PDF engine when possible.
-              The inner <iframe>+message is the cascading fallback. */}
-          <object
-            data={finalUrl}
-            type="application/pdf"
-            className="w-full h-full"
-            aria-label={title}
+        {/* محتوى بسيط - زرار تحميل كبير واضح */}
+        <div 
+          className="flex-1 flex flex-col items-center justify-center p-6 text-center"
+          style={{ backgroundColor: '#f8fafc' }}
+        >
+          <div 
+            className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+            style={{ backgroundColor: '#035d44' }}
           >
-            <iframe
-              src={finalUrl}
-              title={title}
-              className="w-full h-full border-0"
-              loading="lazy"
-            >
-              <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                <p className="text-foreground font-medium mb-2">
-                  المتصفح الحالي لا يدعم عرض ملفات PDF داخل الصفحة.
-                </p>
-                <p className="text-muted-foreground text-sm mb-4">
-                  يمكنك تحميل الملف وقراءته على جهازك.
-                </p>
-                <a
-                  href={finalUrl}
-                  download={`${title || 'book'}.pdf`}
-                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-3 rounded-lg font-medium"
-                >
-                  <Download className="h-4 w-4" />
-                  تحميل الملف
-                </a>
-              </div>
-            </iframe>
-          </object>
+            <Download className="h-10 w-10" style={{ color: '#ffffff' }} />
+          </div>
+          
+          <h3 className="text-xl font-bold mb-2" style={{ color: '#1e293b' }}>
+            {title}
+          </h3>
+          
+          <p className="text-sm mb-6 max-w-sm" style={{ color: '#64748b' }}>
+            لعرض الكتاب، قم بتحميله على جهازك ثم افتحه باستخدام أي تطبيق لقراءة ملفات PDF
+          </p>
+          
+          <a
+            href={downloadUrl}
+            download={`${title || 'book'}.pdf`}
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg shadow-lg"
+            style={{ 
+              backgroundColor: '#035d44', 
+              color: '#ffffff',
+              textDecoration: 'none'
+            }}
+          >
+            <Download className="h-6 w-6" />
+            تحميل الكتاب
+          </a>
+          
+          <p className="text-xs mt-4" style={{ color: '#94a3b8' }}>
+            سيتم تحميل الملف بصيغة PDF
+          </p>
         </div>
       </div>
     )

@@ -126,44 +126,48 @@ export function BookCoverImage({
     )
   }
 
-  // الحالة اللي فيها نعرض صورة فعلية: عندنا URL شغّال ومفيش error
-  const shouldShowImage = signedUrl && signedUrl.trim() !== '' && !imgError
+  // في المتصفحات الداخلية (فيسبوك/انستجرام)، الصور الخارجية غالباً بتتحجب
+  // بسبب CORS أو referrer policy. الحل: نعرض الـ fallback دائماً،
+  // ونحمّل الصورة في الخلفية - لو نجحت تظهر فوق الـ fallback.
+  const hasValidUrl = signedUrl && signedUrl.trim() !== ''
+  const showImage = hasValidUrl && !imgError && imgLoaded
 
   return (
-    <div className={getContainerClasses()} suppressHydrationWarning>
-      {shouldShowImage ? (
-        <>
-          {/* Show loading state when fetching signed URL */}
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg border-2 border-primary/10 z-10">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-3 border-primary border-t-transparent mx-auto mb-3"></div>
-                <p className="text-xs text-primary/70 font-medium">جاري التحميل...</p>
-              </div>
-            </div>
-          )}
-
-          <img
-            src={signedUrl}
-            alt={title}
-            className={getImageClasses()}
-            // referrerPolicy="no-referrer" بيساعد الصور تتحمل في المتصفحات
-            // الداخلية (زي فيسبوك) اللي بتحجب الطلبات بسبب سياسات الـ referrer.
-            referrerPolicy="no-referrer"
-            loading="lazy"
-            decoding="async"
-            onLoad={() => setImgLoaded(true)}
-            onError={() => {
-              console.warn('Image failed to load:', title)
-              // نستخدم React state بدل DOM manipulation عشان يكون
-              // الـ fallback مضمون يظهر في كل المتصفحات.
-              setImgError(true)
-            }}
-          />
-        </>
-      ) : (
-        /* عرض الـ fallback لو مفيش URL أو حصل خطأ في تحميل الصورة */
-        showFallback && getFallbackContent()
+    <div className={getContainerClasses()} suppressHydrationWarning style={{ position: 'relative' }}>
+      {/* الـ fallback يظهر دائماً كخلفية */}
+      {showFallback && (
+        <div style={{ 
+          position: showImage ? 'absolute' : 'relative',
+          inset: 0,
+          opacity: showImage ? 0 : 1,
+          transition: 'opacity 0.3s ease'
+        }}>
+          {getFallbackContent()}
+        </div>
+      )}
+      
+      {/* الصورة الحقيقية - تحمّل في الخلفية وتظهر فوق الـ fallback لو نجحت */}
+      {hasValidUrl && !imgError && (
+        <img
+          src={signedUrl}
+          alt={title}
+          className={getImageClasses()}
+          referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
+          loading="lazy"
+          decoding="async"
+          style={{
+            position: showFallback ? 'absolute' : 'relative',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: imgLoaded ? 1 : 0,
+            transition: 'opacity 0.3s ease'
+          }}
+          onLoad={() => setImgLoaded(true)}
+          onError={() => setImgError(true)}
+        />
       )}
     </div>
   )

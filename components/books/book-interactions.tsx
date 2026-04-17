@@ -157,18 +157,30 @@ export function BookInteractions({ bookId, bookTitle, pdfUrl, pdfViewUrl, hasPdf
                 )}
             </div>
 
-            {/* PDF Viewer Dialog */}
+            {/* PDF Viewer Dialog - hex colors مباشرة عشان تشتغل في المتصفحات الداخلية */}
             <Dialog open={pdfViewerOpen} onOpenChange={setPdfViewerOpen}>
-                <DialogContent className="w-full h-[100dvh] sm:w-[90vw] sm:h-[90vh] max-w-none p-0 flex flex-col rounded-none sm:rounded-lg">
-                    <DialogHeader className="flex-shrink-0 p-3 sm:p-5 border-b bg-muted">
+                <DialogContent 
+                    className="w-full h-[100dvh] sm:w-[90vw] sm:h-[90vh] max-w-none p-0 flex flex-col rounded-none sm:rounded-lg"
+                    style={{ backgroundColor: '#f1f5f9', height: '100vh' }}
+                >
+                    <DialogHeader 
+                        className="flex-shrink-0 p-3 sm:p-5 border-b"
+                        style={{ backgroundColor: '#f1f5f9', borderColor: '#e2e8f0' }}
+                    >
                         <div className="flex items-center justify-between gap-2">
-                            <DialogTitle className="text-sm sm:text-lg font-bold text-foreground truncate max-w-[150px] sm:max-w-xl">{bookTitle || 'كتاب'}</DialogTitle>
+                            <DialogTitle 
+                                className="text-sm sm:text-lg font-bold truncate max-w-[150px] sm:max-w-xl"
+                                style={{ color: '#1e293b' }}
+                            >
+                                {bookTitle || 'كتاب'}
+                            </DialogTitle>
                             <div className="flex items-center gap-2 sm:gap-3">
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={handleDownload}
                                     className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs"
+                                    style={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', color: '#1e293b' }}
                                 >
                                     <span className="material-icons-outlined text-xs">download</span>
                                     <span>تحميل PDF</span>
@@ -178,6 +190,7 @@ export function BookInteractions({ bookId, bookTitle, pdfUrl, pdfViewUrl, hasPdf
                                     size="sm"
                                     onClick={() => setPdfViewerOpen(false)}
                                     className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs"
+                                    style={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', color: '#1e293b' }}
                                 >
                                     <span className="material-icons-outlined text-xs">close</span>
                                     <span className="hidden sm:inline">إغلاق</span>
@@ -185,9 +198,15 @@ export function BookInteractions({ bookId, bookTitle, pdfUrl, pdfViewUrl, hasPdf
                             </div>
                         </div>
                     </DialogHeader>
-                    <div className="flex-1 bg-muted p-2 sm:p-3 overflow-hidden">
-                        {/* Universal Native PDF Viewer for Mobile & Desktop */}
-                        <div className="w-full h-full bg-background rounded-lg shadow-2xl overflow-hidden">
+                    <div 
+                        className="flex-1 p-2 sm:p-3 overflow-hidden"
+                        style={{ backgroundColor: '#f1f5f9' }}
+                    >
+                        {/* PDF Viewer with hex colors */}
+                        <div 
+                            className="w-full h-full rounded-lg shadow-2xl overflow-hidden"
+                            style={{ backgroundColor: '#ffffff' }}
+                        >
                             <PDFViewer
                                 fileKey={pdfViewUrl}
                                 title={bookTitle || 'كتاب'}
