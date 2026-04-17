@@ -30,11 +30,29 @@ export function BookCoverImage({
   // ويشتغل صح في المتصفحات الداخلية اللي فيها querySelector ممكن يتأخر
   // أو onError يتنفذ قبل ما الـ fallback div يكون في الـ DOM.
   const [imgError, setImgError] = useState(false)
+  const [imgLoaded, setImgLoaded] = useState(false)
 
   // reset الخطأ لو اتغير الـ URL
   useEffect(() => {
     setImgError(false)
+    setImgLoaded(false)
   }, [signedUrl])
+
+  // Timer-based fallback: في بعض المتصفحات الداخلية (زي فيسبوك webview)
+  // الـ onError event مبيطلقش لما تحميل الصورة يفشل بسبب CORS أو block.
+  // لو فات 8 ثواني ومحملتش الصورة، نعتبرها فشلت ونعرض الـ fallback.
+  useEffect(() => {
+    if (!signedUrl || imgLoaded || imgError) return
+
+    const timer = setTimeout(() => {
+      if (!imgLoaded) {
+        console.warn('Image load timeout, showing fallback:', title)
+        setImgError(true)
+      }
+    }, 8000)
+
+    return () => clearTimeout(timer)
+  }, [signedUrl, imgLoaded, imgError, title])
 
   const getContainerClasses = () => {
     switch (variant) {
@@ -134,6 +152,7 @@ export function BookCoverImage({
             referrerPolicy="no-referrer"
             loading="lazy"
             decoding="async"
+            onLoad={() => setImgLoaded(true)}
             onError={() => {
               console.warn('Image failed to load:', title)
               // نستخدم React state بدل DOM manipulation عشان يكون

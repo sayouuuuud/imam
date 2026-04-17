@@ -753,3 +753,90 @@ html.fonts-loaded-fallback .material-icons-outlined {
   opacity: 0.6;
 }
 
+/* ============================================================================
+ * CRITICAL LAYER-FREE UTILITIES
+ * ----------------------------------------------------------------------------
+ * السبب الحقيقي وراء مشاكل المتصفحات الداخلية:
+ * السطر الأول في الملف (@layer theme, base, components, utilities;) بيفعّل
+ * CSS Cascade Layers اللي مش مدعومة في Chromium أقل من 99
+ * (وده اللي بيشتغل في Facebook WebView / Instagram WebView على أجهزة كتير).
+ *
+ * لما المتصفح مش بيفهم @layer، بيتجاهل كل الـ CSS جواها بالكامل. ده يفسر
+ * ليه حتى bg-background و text-foreground ماكانوش بيشتغلوا.
+ *
+ * الحل: نكرر الـ utilities الحرجة هنا **خارج أي @layer**. ده بيخلّيها:
+ *   1. تشتغل في المتصفحات القديمة (لأنها مش داخل layer)
+ *   2. تفوز على Tailwind utilities في المتصفحات الحديثة (لأن CSS خارج
+ *      layers ليه priority أعلى من CSS داخل layers)
+ * ============================================================================ */
+
+/* ----- Backgrounds ----- */
+.bg-background { background-color: var(--color-background, #f8fafc); }
+.bg-surface { background-color: var(--color-surface, #ffffff); }
+.bg-card { background-color: var(--color-card, #ffffff); }
+.bg-muted { background-color: var(--color-muted, #f8fafc); }
+.bg-accent { background-color: var(--color-accent, #f1f5f9); }
+.bg-popover { background-color: var(--color-popover, #ffffff); }
+.bg-primary { background-color: var(--color-primary, #035d44); }
+.bg-secondary { background-color: var(--color-secondary, #d4af37); }
+.bg-destructive { background-color: var(--color-destructive, #dc2626); }
+
+.dark .bg-background { background-color: var(--color-background, #0f172a); }
+.dark .bg-surface { background-color: var(--color-surface, #1e293b); }
+.dark .bg-card { background-color: var(--color-card, #1e293b); }
+.dark .bg-muted { background-color: var(--color-muted, #0f172a); }
+.dark .bg-accent { background-color: var(--color-accent, #1e293b); }
+.dark .bg-popover { background-color: var(--color-popover, #1e293b); }
+
+/* ----- Text colors ----- */
+.text-foreground { color: var(--color-foreground, #1e293b); }
+.text-muted-foreground { color: var(--color-muted-foreground, #64748b); }
+.text-primary { color: var(--color-primary, #035d44); }
+.text-secondary { color: var(--color-secondary, #d4af37); }
+.text-primary-foreground { color: var(--color-primary-foreground, #ffffff); }
+.text-secondary-foreground { color: var(--color-secondary-foreground, #1f2937); }
+.text-destructive { color: var(--color-destructive, #dc2626); }
+.text-white { color: #ffffff; }
+
+.dark .text-foreground { color: var(--color-foreground, #f8fafc); }
+.dark .text-muted-foreground { color: var(--color-muted-foreground, #94a3b8); }
+
+/* ----- Borders ----- */
+.border-border { border-color: var(--color-border, #cbd5e1); }
+.border-primary { border-color: var(--color-primary, #035d44); }
+.border-secondary { border-color: var(--color-secondary, #d4af37); }
+.border-input { border-color: var(--color-border, #cbd5e1); }
+
+.dark .border-border { border-color: var(--color-border, #334155); }
+
+/* ----- Hover states (for the most visible interactions) ----- */
+.hover\:bg-muted:hover { background-color: var(--color-muted, #f8fafc); }
+.hover\:bg-accent:hover { background-color: var(--color-accent, #f1f5f9); }
+.hover\:bg-primary:hover { background-color: var(--color-primary, #035d44); }
+.hover\:bg-primary-hover:hover { background-color: var(--color-primary-hover, #047857); }
+.hover\:text-primary:hover { color: var(--color-primary, #035d44); }
+
+.dark .hover\:bg-muted:hover { background-color: var(--color-muted, #0f172a); }
+.dark .hover\:bg-accent:hover { background-color: var(--color-accent, #1e293b); }
+
+/* ----- Sticky header safety net -----
+ * ضمان أخير للهيدر في كل المتصفحات: أي هيدر sticky هياخد خلفية صلبة
+ * حتى لو Tailwind utilities فشلت في التطبيق. */
+header.sticky {
+  background-color: var(--color-background, #f8fafc);
+}
+.dark header.sticky {
+  background-color: var(--color-background, #0f172a);
+}
+
+/* ----- Dialog / Modal safety net -----
+ * الـ Dialog overlay و content لازم يكون ليهم خلفيات صلبة ضامنة. */
+[data-slot="dialog-overlay"] {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+[data-slot="dialog-content"] {
+  background-color: var(--color-background, #f8fafc);
+}
+.dark [data-slot="dialog-content"] {
+  background-color: var(--color-card, #1e293b);
+}
