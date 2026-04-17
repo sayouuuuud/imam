@@ -15,6 +15,7 @@ import { FileUpload } from "@/components/admin/file-upload"
 import { Pagination } from "@/components/admin/pagination"
 import { CategorySelector } from "@/components/admin/category-selector"
 import { BookOpen, Plus, Eye, Search, Edit, Trash2, Loader2, CheckCircle, FileEdit } from "lucide-react"
+import { notifySearchEngines } from "@/lib/seo/indexnow-submit"
 
 // Helper function to get thumbnail URL
 const getThumbnailUrl = (lesson: any) => {
@@ -433,17 +434,25 @@ export default function ManageDarsPage() {
     setSubmitting(true)
     const categoryIdToSend =
       formData.category_id === "none" ? null : formData.category_id
-    const { error } = await supabase.from("lessons").insert({
-      ...formData,
-      media_url: formData.media_url || null,
-      thumbnail_path: formData.thumbnail_path || null,
-      category_id: categoryIdToSend,
-    })
+    const { data: inserted, error } = await supabase
+      .from("lessons")
+      .insert({
+        ...formData,
+        media_url: formData.media_url || null,
+        thumbnail_path: formData.thumbnail_path || null,
+        category_id: categoryIdToSend,
+      })
+      .select("id, slug, publish_status")
+      .single()
 
     if (!error) {
       setIsAddModalOpen(false)
       resetForm()
       fetchLessons()
+      if (inserted?.publish_status === "published") {
+        const ident = inserted.slug || inserted.id
+        notifySearchEngines([`/dars/${ident}`, "/dars", "/"])
+      }
     } else {
       alert("حدث خطأ أثناء الإضافة: " + error.message)
     }
@@ -470,6 +479,10 @@ export default function ManageDarsPage() {
       setIsEditModalOpen(false)
       setEditingLesson(null)
       fetchLessons()
+      if (formData.publish_status === "published") {
+        const ident = (editingLesson as any).slug || editingLesson.id
+        notifySearchEngines([`/dars/${ident}`, "/dars"])
+      }
     }
     setSubmitting(false)
   }
@@ -484,7 +497,7 @@ export default function ManageDarsPage() {
       .eq("id", id)
       .single()
 
-    // 2. حذف الملفات من B2 إن وجدت
+    // 2. حذف الملفات من B2 ��ن وجدت
     if (item) {
       // Legacy B2 delete
       if (item.media_url?.startsWith("uploads/")) {

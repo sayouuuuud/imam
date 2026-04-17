@@ -16,6 +16,7 @@ import { Pagination } from "@/components/admin/pagination"
 import { CategorySelector } from "@/components/admin/category-selector"
 import { FileText, Plus, Eye, Search, Pencil, Trash2, Loader2, CheckCircle, FileEdit, Maximize2, Minimize2 } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
+import { notifySearchEngines } from "@/lib/seo/indexnow-submit"
 
 interface Article {
   id: string
@@ -267,16 +268,30 @@ export default function ManageArticlesPage() {
     // FIX: Convert "none" back to null before sending to Supabase
     const categoryIdToSend = formData.category_id === "none" ? null : formData.category_id
 
-    const { error } = await supabase.from("articles").insert({
-      ...formData,
-      featured_image: formData.featured_image || null,
-      category_id: categoryIdToSend,
-    })
+    const { data: inserted, error } = await supabase
+      .from("articles")
+      .insert({
+        ...formData,
+        featured_image: formData.featured_image || null,
+        category_id: categoryIdToSend,
+      })
+      .select("id, slug, publish_status")
+      .single()
 
     if (!error) {
       setIsAddModalOpen(false)
       resetForm()
       fetchArticles()
+      // Auto-submit to IndexNow + revalidate sitemap so the new article
+      // becomes discoverable to search engines within minutes.
+      if (inserted?.publish_status === "published") {
+        const ident = inserted.slug || inserted.id
+        notifySearchEngines([
+          `/articles/${ident}`,
+          "/articles",
+          "/",
+        ])
+      }
     } else {
       alert("حدث خطأ أثناء الإضافة: " + error.message)
     }
@@ -304,6 +319,15 @@ export default function ManageArticlesPage() {
       setIsEditModalOpen(false)
       setEditingArticle(null)
       fetchArticles()
+      // Tell Bing/Yandex the article changed and bust the page cache so the
+      // updated content appears for cold visitors immediately.
+      if (formData.publish_status === "published") {
+        const ident = (editingArticle as any).slug || editingArticle.id
+        notifySearchEngines([
+          `/articles/${ident}`,
+          "/articles",
+        ])
+      }
     }
     setSubmitting(false)
   }

@@ -27,7 +27,21 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     const customDisallow = parseDirectiveList(settings.robots_txt, "Disallow")
     const customAllow = parseDirectiveList(settings.robots_txt, "Allow")
 
-    const baseDisallow = ["/admin/", "/api/", "/login", "/private/"]
+    // Block all internal/non-public surfaces. /search would otherwise let
+    // Google index a blank or repeated results page for every query string,
+    // which hurts the overall site quality score.
+    const baseDisallow = [
+        "/admin/",
+        "/api/",
+        "/login",
+        "/private/",
+        "/search",
+        "/debug",
+        "/cloud",
+        "/import",
+        "/*?*utm_", // strip tracked URLs
+        "/*?*ref=",
+    ]
     const disallow = Array.from(new Set([...baseDisallow, ...customDisallow]))
     const allow = customAllow.length > 0 ? Array.from(new Set(["/", ...customAllow])) : "/"
 

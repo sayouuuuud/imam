@@ -16,6 +16,7 @@ import { FileUpload } from "@/components/admin/file-upload"
 import { BookOpen, Plus, Pencil, Trash2, Eye, Loader2, Search, Download, FileText, Link2, Upload } from "lucide-react"
 import { useSignedUrl } from "@/hooks/use-signed-url"
 import { useDebounce } from "@/hooks/use-debounce"
+import { notifySearchEngines } from "@/lib/seo/indexnow-submit"
 
 interface Book {
   id: string
@@ -484,27 +485,35 @@ export default function ManageBooksPage() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
-    const { error } = await supabase.from("books").insert({
-      title: formData.title,
-      author: formData.author || null,
-      description: formData.description || null,
-      cover_image_path: formData.cover_image_path || null,
-      pdf_file_path: formData.pdf_type === "local" ? (formData.pdf_file_path || null) : null,
-      pdf_type: formData.pdf_type,
-      pdf_external_url: formData.pdf_type === "external" ? (formData.pdf_external_url || null) : null,
-      publish_status: formData.publish_status,
-      is_active: formData.is_active,
-      publish_year: formData.publish_year || null,
-      language: formData.language || null,
-      file_size: formData.file_size || null,
-      pages: formData.pages || null,
-      category_id: formData.category_id || null,
-    })
+    const { data: inserted, error } = await supabase
+      .from("books")
+      .insert({
+        title: formData.title,
+        author: formData.author || null,
+        description: formData.description || null,
+        cover_image_path: formData.cover_image_path || null,
+        pdf_file_path: formData.pdf_type === "local" ? (formData.pdf_file_path || null) : null,
+        pdf_type: formData.pdf_type,
+        pdf_external_url: formData.pdf_type === "external" ? (formData.pdf_external_url || null) : null,
+        publish_status: formData.publish_status,
+        is_active: formData.is_active,
+        publish_year: formData.publish_year || null,
+        language: formData.language || null,
+        file_size: formData.file_size || null,
+        pages: formData.pages || null,
+        category_id: formData.category_id || null,
+      })
+      .select("id, slug, publish_status")
+      .single()
 
     if (!error) {
       setIsAddModalOpen(false)
       resetForm()
       fetchItems()
+      if (inserted?.publish_status === "published") {
+        const ident = inserted.slug || inserted.id
+        notifySearchEngines([`/books/${ident}`, "/books", "/"])
+      }
     } else {
       alert("حدث خطأ أثناء الإضافة: " + error.message)
     }
@@ -539,6 +548,10 @@ export default function ManageBooksPage() {
       setIsEditModalOpen(false)
       setEditingItem(null)
       fetchItems()
+      if (formData.publish_status === "published" && editingItem) {
+        const ident = (editingItem as any).slug || editingItem.id
+        notifySearchEngines([`/books/${ident}`, "/books"])
+      }
     } else {
       alert("حدث خطأ أثناء التحديث: " + error.message)
     }

@@ -161,7 +161,8 @@ export default async function BookDetailPage({ params }: PageProps) {
     }
 
     if (isUuid && book.slug) {
-        redirect(`/books/${book.slug}`);
+        // 308 permanent so Google consolidates the UUID URL onto the slug URL.
+        permanentRedirect(`/books/${encodeURI(book.slug)}`);
     }
 
     // Fetch related books

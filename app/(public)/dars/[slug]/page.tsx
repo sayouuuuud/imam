@@ -165,7 +165,8 @@ export default async function DarsDetailPage({ params }: PageProps) {
     }
 
     if (isUuid && lesson.slug) {
-        redirect(`/dars/${lesson.slug}`);
+        // 308 permanent so Google consolidates the UUID URL onto the slug URL.
+        permanentRedirect(`/dars/${encodeURI(lesson.slug)}`);
     }
 
     // Fetch related lessons

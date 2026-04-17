@@ -12,7 +12,7 @@ import { stripHtml } from "@/lib/utils/strip-html"
 import { getSermonOgImage } from "@/lib/utils/og-images"
 
 import { Metadata } from "next"
-import { redirect } from "next/navigation"
+import { permanentRedirect } from "next/navigation"
 import { JsonLd } from "@/components/json-ld"
 import { generateArticleSchema, generateAudioSchema, generateBreadcrumbSchema, formatDurationToISO } from "@/lib/schema-generator"
 
@@ -148,9 +148,10 @@ export default async function KhutbaDetailPage({ params }: PageProps) {
     }
 
     // Permanent redirect if accessed via UUID but has a slug
-    if (isUuid && sermon.slug) {
-        redirect(`/khutba/${sermon.slug}`);
-    }
+  if (isUuid && sermon.slug) {
+    // 308 so Google consolidates the UUID URL onto the slug URL.
+    permanentRedirect(`/khutba/${encodeURI(sermon.slug)}`);
+  }
 
     // Fetch related sermons
     const { data: relatedSermonsData } = await supabase.from("sermons")

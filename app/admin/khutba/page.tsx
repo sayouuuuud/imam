@@ -18,6 +18,7 @@ import { BookCoverImage } from "@/components/book-cover-image"
 import { AudioPlayer } from "@/app/admin/audio-player"
 import { Mic, Plus, Eye, Search, Edit, Trash2, Loader2, CheckCircle, FileEdit, Download } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
+import { notifySearchEngines } from "@/lib/seo/indexnow-submit"
 
 interface Sermon {
     id: string
@@ -377,18 +378,27 @@ export default function ManageKhutbaPage() {
         const categoryIdToSend =
             formData.category_id === "none" ? null : formData.category_id
         // console.log("Form data being sent:", formData)
-        const { error } = await supabase.from("sermons").insert({
-            ...formData,
-            video_url: formData.video_url || null,
-            audio_url: formData.audio_url || null,
-            thumbnail_path: formData.thumbnail_path || null,
-            category_id: categoryIdToSend,
-        })
+        const { data: inserted, error } = await supabase
+            .from("sermons")
+            .insert({
+                ...formData,
+                video_url: formData.video_url || null,
+                audio_url: formData.audio_url || null,
+                thumbnail_path: formData.thumbnail_path || null,
+                category_id: categoryIdToSend,
+            })
+            .select("id, slug, publish_status")
+            .single()
 
         if (!error) {
             setIsAddModalOpen(false)
             resetForm()
             fetchSermons()
+            // Auto-ping search engines when publishing a new sermon
+            if (inserted?.publish_status === "published") {
+                const ident = inserted.slug || inserted.id
+                notifySearchEngines([`/khutba/${ident}`, "/khutba", "/"])
+            }
         } else {
             alert("حدث خطأ أثناء الإضافة: " + error.message)
         }
@@ -417,6 +427,12 @@ export default function ManageKhutbaPage() {
             setIsEditModalOpen(false)
             setEditingSermon(null)
             fetchSermons()
+            // Ping search engines after updates so the fresh content is
+            // discovered quickly, not after the 1h sitemap cache window.
+            if (formData.publish_status === "published") {
+                const ident = (editingSermon as any).slug || editingSermon.id
+                notifySearchEngines([`/khutba/${ident}`, "/khutba"])
+            }
         }
         setSubmitting(false)
     }

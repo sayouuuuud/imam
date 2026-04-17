@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
+import { permanentRedirect } from "next/navigation"
 import { Home, Search, ChevronLeft, CalendarDays, Play } from "lucide-react"
+
+// UUIDs never match this pattern. If `params.id` looks like a UUID AND a slug
+// exists on the row, we 301 to the slug URL. Otherwise the page serves as-is.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 import { SafeHtml } from "@/components/ui/safe-html"
 import { BookCoverImage } from "@/components/book-cover-image"
 import { SheikhProfileCard } from "@/components/sheikh-profile-card"
@@ -19,13 +24,20 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
   const supabase = await createClient()
-  const { data: article } = await supabase.from("articles").select("title, content, thumbnail, featured_image").eq("id", id).single()
+
+  // Look up by slug first, then UUID. Either way we always emit the slug
+  // in the canonical URL so Google indexes one URL per article.
+  const isUuid = UUID_RE.test(id)
+  const metaQuery = isUuid
+    ? supabase.from("articles").select("title, content, thumbnail, featured_image, slug").eq("id", id)
+    : supabase.from("articles").select("title, content, thumbnail, featured_image, slug").eq("slug", id)
+  const { data: article } = await metaQuery.single()
 
   if (!article) return { title: "المقال غير موجود" }
 
   const ogImage = getArticleOgImage(article)
 
-  const canonicalPath = `/articles/${id}`
+  const canonicalPath = `/articles/${article.slug ? encodeURI(article.slug) : id}`
 
   return {
     title: `${article.title} | الشيخ السيد مراد سلامة`,
@@ -81,10 +93,32 @@ export default async function ArticleDetailPage({ params }: PageProps) {
   const { id } = await params
   const supabase = await createClient()
 
-  // Parallel data fetching
+  // If the URL uses a UUID but the article has a slug, permanently redirect
+  // to the slug URL. Saves Google's crawl budget and prevents duplicate
+  // indexing of the same article under two URLs.
+  if (UUID_RE.test(id)) {
+    const { data: slugRow } = await supabase
+      .from("articles")
+      .select("slug")
+      .eq("id", id)
+      .eq("publish_status", "published")
+      .maybeSingle()
+    if (slugRow?.slug) {
+      // 308 (permanent) instead of the default 307 so Google consolidates
+      // link equity onto the slug URL.
+      permanentRedirect(`/articles/${encodeURI(slugRow.slug)}`)
+    }
+  }
+
+  // Parallel data fetching — look up by slug first, then fall back to id so
+  // both URL shapes keep working while legacy links still resolve.
+  const articleQuery = UUID_RE.test(id)
+    ? supabase.from("articles").select("*").eq("id", id).eq("publish_status", "published").single()
+    : supabase.from("articles").select("*").eq("slug", id).eq("publish_status", "published").single()
+
   const [articleResponse, relatedArticlesResponse] = await Promise.all([
-    supabase.from("articles").select("*").eq("id", id).eq("publish_status", "published").single(),
-    supabase.from("articles").select("id, title, author, featured_image, created_at").eq("publish_status", "published").neq("id", id).limit(3)
+    articleQuery,
+    supabase.from("articles").select("id, slug, title, author, featured_image, created_at").eq("publish_status", "published").neq("id", id).limit(3)
   ])
 
   const article = articleResponse.data
@@ -125,18 +159,22 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
   const articleSchema = await generateArticleSchema({
     title: article.title,
-    description: article.content ? stripHtml(article.content).slice(0, 160) : undefined, // Kept original arguments as per instruction to only add await
-    url: `/articles/${article.id}`, // Kept original arguments
-    image: primaryImageUrl || undefined, // Kept original arguments
-    datePublished: article.created_at, // Kept original arguments
-    dateModified: article.created_at, // Kept original arguments
-    authorName: article.author || undefined, // Kept original arguments
+    description: article.content ? stripHtml(article.content).slice(0, 160) : undefined,
+    // Pass the full content so the schema generator can compute wordCount
+    // and articleBody — both help Google classify this as long-form content.
+    content: article.content || undefined,
+    url: `/articles/${article.slug || article.id}`,
+    image: primaryImageUrl || undefined,
+    datePublished: article.created_at,
+    dateModified: article.updated_at || article.created_at,
+    tags: article.tags || undefined,
+    authorName: article.author || undefined,
   })
 
   const breadcrumbSchema = await generateBreadcrumbSchema([
     { name: 'الرئيسية', item: '/' },
     { name: 'المقالات', item: '/articles' },
-    { name: article.title, item: `/articles/${article.id}` },
+    { name: article.title, item: `/articles/${article.slug || article.id}` },
   ])
 
   return (
@@ -245,8 +283,12 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                   </h3>
                 </div>
                 <div className="space-y-4">
-                  {relatedArticles.map((relatedArticle) => (
-                    <Link key={relatedArticle.id} href={`/articles/${relatedArticle.id}`} className="group block">
+                  {relatedArticles.map((relatedArticle: any) => (
+                    <Link
+                      key={relatedArticle.id}
+                      href={`/articles/${relatedArticle.slug ? encodeURI(relatedArticle.slug) : relatedArticle.id}`}
+                      className="group block"
+                    >
                       <div className="flex gap-4 items-start">
                         <div className="w-20 h-20 rounded-lg bg-muted shrink-0 overflow-hidden relative">
                           <div className="absolute inset-0 bg-primary/20 group-hover:bg-primary/40 transition-colors flex items-center justify-center">

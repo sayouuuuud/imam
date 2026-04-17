@@ -201,6 +201,26 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
+        {/* Warm up the Supabase image/storage host early so article and
+            book covers start downloading before the parser hits them. Cuts
+            LCP on content-heavy pages noticeably. */}
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <>
+            <link
+              rel="preconnect"
+              href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin}
+              crossOrigin="anonymous"
+            />
+            <link
+              rel="dns-prefetch"
+              href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin}
+            />
+          </>
+        )}
+
+        {/* RSS autodiscovery helps Google News / readers surface new posts. */}
+        <link rel="alternate" type="application/rss+xml" title="آخر المقالات" href="/feed.xml" />
+
         {/* Preload Material Icons to prevent FOUC (Flash of Unstyled Content) */}
         <link
           rel="preload"
