@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react"
 import { ExternalLink, Copy, Check } from "lucide-react"
 
+// مفتاح التخزين المحلي: لو المستخدم اختار يتخطى التحذير،
+// نفتكر اختياره للجلسة الحالية فقط عشان ميضايقوش في كل صفحة.
+const SKIP_STORAGE_KEY = "iab-blocker-skipped"
+
 /**
  * Detects in-app browsers (Facebook, Instagram, etc.) and prompts user to open in external browser
  */
@@ -15,6 +19,15 @@ export function InAppBrowserBlocker() {
         if (typeof window === "undefined") return
 
         setCurrentUrl(window.location.href)
+
+        // لو المستخدم اختار يتخطى التحذير في نفس الجلسة، ما نعرضوش تاني.
+        try {
+            if (window.sessionStorage.getItem(SKIP_STORAGE_KEY) === "1") {
+                return
+            }
+        } catch {
+            // sessionStorage قد يكون غير متاح في بعض المتصفحات الداخلية
+        }
 
         const ua = navigator.userAgent || (navigator as any).vendor || (window as any).opera || ""
 
@@ -104,6 +117,17 @@ export function InAppBrowserBlocker() {
         }
     }
 
+    // تخطي التحذير ومتابعة التصفح داخل التطبيق. بنحفظ الاختيار في
+    // sessionStorage عشان ميرجعش يظهر مع كل تنقل بين الصفحات.
+    const skipBlocker = () => {
+        try {
+            window.sessionStorage.setItem(SKIP_STORAGE_KEY, "1")
+        } catch {
+            // لو التخزين مش متاح، على الأقل نخفي الشاشة الحالية.
+        }
+        setIsBlocked(false)
+    }
+
     if (isBlocked) {
         return (
             <div className="fixed inset-0 z-[99999] bg-background flex flex-col items-center justify-center p-6 text-center" dir="rtl">
@@ -149,6 +173,20 @@ export function InAppBrowserBlocker() {
                                 {currentUrl}
                             </span>
                         </div>
+                    </div>
+
+                    {/* زر تخطي التحذير ومتابعة التصفح داخل التطبيق الحالي.
+                        بيتحفظ الاختيار في sessionStorage حتى نهاية الجلسة. */}
+                    <div className="pt-2">
+                        <button
+                            onClick={skipBlocker}
+                            className="w-full text-muted-foreground hover:text-foreground py-2 text-sm underline-offset-4 hover:underline transition-colors"
+                        >
+                            المتابعة والتصفح داخل التطبيق على أي حال
+                        </button>
+                        <p className="text-[11px] text-muted-foreground/70 mt-1 leading-relaxed">
+                            قد تظهر بعض المشاكل في الاستايل أو عرض الملفات
+                        </p>
                     </div>
                 </div>
             </div>
