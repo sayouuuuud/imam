@@ -1,13 +1,15 @@
-import { createClient } from "@/lib/supabase/server"
+import { createPublicClient } from "@/lib/supabase/public"
 import Link from "next/link"
-import { Home, Search, ChevronLeft, Calendar, Clock, Eye, Play } from "lucide-react"
+import { ChevronLeft, Calendar, Clock, Eye, Play } from "lucide-react"
 import { SafeHtml } from "@/components/ui/safe-html"
 import { SheikhProfileCard } from "@/components/sheikh-profile-card"
 import { NewsletterCard } from "@/components/newsletter-card"
 import { VideoInteractions } from "@/components/videos/video-interactions"
+import { ViewTracker } from "@/components/view-tracker"
 import { stripHtml } from "@/lib/utils/strip-html"
 import { getVideoOgImage } from "@/lib/utils/og-images"
 import { Metadata } from "next"
+import { notFound } from "next/navigation"
 import { JsonLd } from "@/components/json-ld"
 import { generateVideoSchema, generateBreadcrumbSchema, formatDurationToISO } from "@/lib/schema-generator"
 
@@ -15,12 +17,28 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
+// Revalidate the cached page at most once an hour instead of rendering (and
+// hitting Supabase) on every request.
+export const revalidate = 3600
+
+export async function generateStaticParams() {
+  const supabase = createPublicClient()
+  const { data } = await supabase
+    .from("media")
+    .select("id")
+    .eq("publish_status", "published")
+    .order("created_at", { ascending: false })
+    .limit(100)
+
+  return (data || []).map((v) => ({ id: v.id as string }))
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data: video } = await supabase.from("media").select("title, description, thumbnail, source, url").eq("id", id).single()
 
-  if (!video) return { title: "الفيديو غير موجود" }
+  if (!video) return { title: "الفيديو غير موجود", robots: { index: false, follow: false } }
 
   const ogImage = getVideoOgImage(video)
   const canonicalPath = `/videos/${id}`
@@ -88,7 +106,7 @@ const getThumbnailUrl = (video: any) => {
 
 export default async function VideoDetailPage({ params }: PageProps) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   // Parallel data fetching
   const [videoResponse, relatedVideosResponse] = await Promise.all([
@@ -99,33 +117,8 @@ export default async function VideoDetailPage({ params }: PageProps) {
   const video = videoResponse.data
 
   if (!video) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <div className="text-center max-w-md">
-          <div className="text-8xl font-bold text-primary/20 mb-4">404</div>
-          <h1 className="text-3xl font-bold text-foreground mb-4 font-serif">الفيديو غير موجود</h1>
-          <p className="text-muted-foreground mb-8">عذراً، الفيديو الذي تبحث عنه غير موجود أو تم حذفه.</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/">
-              <button className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-lg font-medium transition-colors">
-                <Home className="h-4 w-4" />
-                الرئيسية
-              </button>
-            </Link>
-            <Link href="/videos">
-              <button className="flex items-center gap-2 bg-muted hover:bg-accent text-foreground px-6 py-3 rounded-lg font-medium transition-colors border border-border">
-                <Search className="h-4 w-4" />
-                تصفح المرئيات
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    notFound()
   }
-
-  // Increment views
-  await supabase.from("media").update({ views_count: (video.views_count || 0) + 1 }).eq("id", id)
 
   // Fetch category name
   let categoryName = null
@@ -158,6 +151,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
       <JsonLd schema={[videoSchema, breadcrumbSchema]} />
+      <ViewTracker table="media" id={video.id} />
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-8 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">

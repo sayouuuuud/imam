@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-
+import { createPublicClient } from "@/lib/supabase/public"
 
 // IMPORTANT: This route handles legacy B2 downloads and proxying
 // It also handles DOWNLOAD COUNTING logic
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         // --- Logic: Increment Download Count ---
         if (isDownload && id) {
             // Fire and forget (or await if critical)
-            const supabase = await createClient()
+            const supabase = createPublicClient()
             try {
                 // RPC call with dynamic table name
                 const { error } = await supabase.rpc('increment_downloads', { row_id: id, table_name: table })

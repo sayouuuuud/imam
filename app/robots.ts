@@ -43,7 +43,13 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         "/*?*ref=",
     ]
     const disallow = Array.from(new Set([...baseDisallow, ...customDisallow]))
-    const allow = customAllow.length > 0 ? Array.from(new Set(["/", ...customAllow])) : "/"
+    // /api/download serves cover images, thumbnails, and audio files used in
+    // og:image tags and on-page media. Google's robots.txt matcher applies
+    // the longest matching rule, so this Allow overrides the broader
+    // "/api/" Disallow above for this one path without opening up the rest
+    // of the API surface.
+    const baseAllow = ["/", "/api/download"]
+    const allow = customAllow.length > 0 ? Array.from(new Set([...baseAllow, ...customAllow])) : baseAllow
 
     return {
         rules: [
