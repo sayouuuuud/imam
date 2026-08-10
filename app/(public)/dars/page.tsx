@@ -27,68 +27,47 @@ export async function generateMetadata(): Promise<Metadata> {
   })
 }
 
-// Helper function to get thumbnail URL
+// Helper function to get thumbnail URL.
+// This ran with ~12 console.log calls per lesson, so every static build and
+// every request spammed the server logs with hundreds of lines — which buries
+// the real errors you actually need to see in production.
 const getThumbnailUrl = (lesson: any) => {
-  console.log('📚 [DARS PAGE] getThumbnailUrl Input:', {
-    lessonId: lesson.id,
-    thumbnail_path: lesson.thumbnail_path,
-    startsWithUploads: lesson.thumbnail_path?.startsWith("uploads/"),
-    startsWithHttp: lesson.thumbnail_path?.startsWith("http"),
-    startsWithApi: lesson.thumbnail_path?.startsWith("/api/")
-  })
+  const path: string | undefined = lesson.thumbnail_path
 
   // If it's a malformed URL containing API path, extract real key
-  if (lesson.thumbnail_path?.includes('/api/download?key=')) {
-    console.log('🔧 Found malformed API URL, extracting key...')
+  if (path?.includes("/api/download?key=")) {
     try {
-      const url = new URL(lesson.thumbnail_path, 'http://localhost:3000')
-      const encodedKey = url.searchParams.get('key')
+      const url = new URL(path, "http://localhost:3000")
+      const encodedKey = url.searchParams.get("key")
       if (encodedKey) {
-        const realKey = decodeURIComponent(encodedKey)
-        console.log('✅ Extracted real key:', realKey)
-        return `/api/download?key=${encodeURIComponent(realKey)}`
+        return `/api/download?key=${encodeURIComponent(decodeURIComponent(encodedKey))}`
       }
-    } catch (e: any) {
-      console.error('❌ Failed to extract key from malformed URL:', e?.message || 'Unknown error')
+    } catch {
+      // Fall through to the checks below.
     }
   }
 
   // If it's already a full URL from B2 (signed URL), extract the path
-  if (lesson.thumbnail_path?.startsWith("http") && lesson.thumbnail_path?.includes('backblazeb2.com')) {
-    console.log('🔄 Found B2 signed URL, extracting path...')
+  if (path?.startsWith("http") && path.includes("backblazeb2.com")) {
     try {
-      const url = new URL(lesson.thumbnail_path)
-      const pathParts = url.pathname.split('/')
-      const uploadsIndex = pathParts.findIndex(part => part === 'uploads')
+      const pathParts = new URL(path).pathname.split("/")
+      const uploadsIndex = pathParts.findIndex((part) => part === "uploads")
       if (uploadsIndex !== -1) {
-        const realPath = pathParts.slice(uploadsIndex).join('/')
-        console.log('✅ Extracted path from B2 URL:', realPath)
-        return `/api/download?key=${encodeURIComponent(realPath)}`
+        return `/api/download?key=${encodeURIComponent(pathParts.slice(uploadsIndex).join("/"))}`
       }
-    } catch (e: any) {
-      console.error('❌ Failed to extract path from B2 URL:', e?.message || 'Unknown error')
+    } catch {
+      // Fall through to the checks below.
     }
   }
 
-  // If it's already a full URL (not B2), use it directly
-  if (lesson.thumbnail_path?.startsWith("http")) {
-    console.log('🌐 Using direct HTTP URL:', lesson.thumbnail_path)
-    return lesson.thumbnail_path
-  }
-
-  // If it's already an API URL, use it directly
-  if (lesson.thumbnail_path?.startsWith("/api/")) {
-    console.log('🔗 Using existing API URL:', lesson.thumbnail_path)
-    return lesson.thumbnail_path
-  }
+  // Full URL (not B2) or an existing API URL — use as-is.
+  if (path?.startsWith("http") || path?.startsWith("/api/")) return path
 
   // If it's an uploads path, convert to API URL
-  if (lesson.thumbnail_path?.startsWith("uploads/")) {
-    console.log('📁 Converting uploads path to API URL:', lesson.thumbnail_path)
-    return `/api/download?key=${encodeURIComponent(lesson.thumbnail_path)}`
+  if (path?.startsWith("uploads/")) {
+    return `/api/download?key=${encodeURIComponent(path)}`
   }
 
-  console.log('❓ No thumbnail path found, using placeholder')
   return "/placeholder.svg"
 }
 
