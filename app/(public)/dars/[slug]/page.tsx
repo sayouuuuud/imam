@@ -1,6 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public"
 import Link from "next/link"
-import { ChevronLeft, Clock, Eye, Music, BookOpen, History, School } from "lucide-react"
+import { ChevronLeft, Clock, Eye, Play, BookOpen, History, School } from "lucide-react"
 import { SafeHtml } from "@/components/ui/safe-html"
 import { BookCoverImage } from "@/components/book-cover-image"
 import { AudioPlayer } from "@/components/audio-player"
@@ -91,11 +91,11 @@ const formatDate = (dateString: string) => {
 const getLessonTypeIcon = (type: string) => {
     switch (type) {
         case "fiqh":
-            return <BookOpen className="h-5 w-5" />
+            return <BookOpen className="h-3.5 w-3.5" />
         case "seerah":
-            return <History className="h-5 w-5" />
+            return <History className="h-3.5 w-3.5" />
         default:
-            return <School className="h-5 w-5" />
+            return <School className="h-3.5 w-3.5" />
     }
 }
 
@@ -214,21 +214,25 @@ export default async function DarsDetailPage({ params }: PageProps) {
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] dark:bg-background bg-pattern text-foreground antialiased transition-colors duration-300">
-            <JsonLd schema={[articleSchema, breadcrumbSchema, ...(mediaSchema ? [mediaSchema] : [])]} />
-            <ViewTracker table="lessons" id={lesson.id} />
-            <div className="max-w-6xl mx-auto px-4 py-12">
-                <style>{`
+            <style>{`
           @media print {
             body * { visibility: hidden; }
-            #print-content, #print-content * { visibility: visible; }
-            #print-content {
-              position: absolute; left: 0; top: 0; width: 100%; max-width: none;
+            #lesson-content, #lesson-content * { visibility: visible; }
+            #lesson-content {
+              position: absolute; left: 0; top: 0; width: 100%; color: #000000 !important;
             }
-            .no-print { display: none !important; }
+            #lesson-content * {
+              color: #000000 !important; background: #ffffff !important;
+            }
+            .no-print, header, footer, .lg\\:col-span-4 { display: none !important; }
           }
         `}</style>
+            <div className="container mx-auto px-0 md:px-4 lg:px-8 py-10 min-h-screen">
+                <JsonLd schema={[articleSchema, breadcrumbSchema, ...(mediaSchema ? [mediaSchema] : [])]} />
+                <ViewTracker table="lessons" id={lesson.id} />
 
-                <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-8 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] print:hidden">
+                {/* Breadcrumb */}
+                <nav className="px-4 md:px-0 flex items-center text-sm text-gray-500 dark:text-gray-400 mb-8 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] print:hidden">
                     <Link href="/" className="hover:text-primary dark:hover:text-secondary">الرئيسية</Link>
                     <ChevronLeft className="h-4 w-4 mx-2 text-gray-400" />
                     <Link href="/dars" className="hover:text-primary dark:hover:text-secondary">الدروس العلمية</Link>
@@ -236,90 +240,68 @@ export default async function DarsDetailPage({ params }: PageProps) {
                     <span className="text-primary dark:text-secondary font-medium">{lesson.title}</span>
                 </nav>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <article className="lg:col-span-2">
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Main Content */}
+                    <div className="lg:col-span-8 space-y-0 md:space-y-8">
+                        {/* Lesson Header Card */}
+                        <div className="bg-card rounded-none md:rounded-2xl p-6 md:p-8 border-b md:border border-border shadow-none md:shadow-sm relative overflow-hidden">
+                            <span className="material-icons-outlined absolute -left-10 -top-10 text-9xl text-gray-50 dark:text-gray-800/30 opacity-50 transform rotate-12">school</span>
+                            <div className="relative z-10">
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    <span className="px-3 py-1 text-xs rounded-full font-medium border flex items-center gap-1" style={{ backgroundColor: '#fdf4dc', color: '#b58842', borderColor: '#d4af37' }}>
+                                        {getLessonTypeIcon(lesson.lesson_type)}
+                                        {getLessonTypeName(lesson.lesson_type)}
+                                    </span>
+                                    <span className="px-3 py-1 bg-muted text-muted-foreground text-xs rounded-full flex items-center gap-1">
+                                        <Clock className="h-3 w-3" />
+                                        {formatDate(lesson.created_at)}
+                                    </span>
+                                    <span className="px-3 py-1 bg-muted text-muted-foreground text-xs rounded-full flex items-center gap-1">
+                                        <Eye className="h-3 w-3" />
+                                        {lesson.views_count || 0} مشاهدة
+                                    </span>
+                                </div>
+                                <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-6 leading-tight">
+                                    {lesson.title}
+                                </h1>
+                                {lesson.description && (
+                                    <p className="text-muted-foreground text-lg leading-relaxed mb-6">
+                                        {lesson.description.replace(/<[^>]*>/g, '')}
+                                    </p>
+                                )}
 
-                        {/* Print Content */}
-                        <div id="print-content" className="hidden print:block print:p-8 print:max-w-none print:text-black print:bg-white">
-                            <div className="print:text-center print:mb-8 print:border-b-2 print:border-gray-300 print:pb-4">
-                                <h1 className="print:text-3xl print:font-bold print:mb-4 print:text-gray-900">{lesson.title}</h1>
-                                <div className="print:flex print:justify-between print:text-sm print:text-gray-600">
-                                    <span>التاريخ: {formatDate(lesson.created_at)}</span>
-                                    {lesson.duration && <span>المدة: {lesson.duration} دقيقة</span>}
-                                </div>
-                            </div>
-                            {lesson.description && (
-                                <div className="print:text-gray-600 print:mb-4 print:italic">
-                                    {lesson.description.replace(/<[^>]*>/g, '')}
-                                </div>
-                            )}
-                            <div className="print:text-gray-800 print:leading-relaxed">
-                                <SafeHtml html={lesson.content || lesson.description || ""} className="print:text-base print:leading-8 print:text-gray-900" />
+                                {thumbnailPath && (
+                                    <div className="rounded-xl overflow-hidden border border-border">
+                                        <BookCoverImage
+                                            coverImagePath={thumbnailPath}
+                                            title={lesson.title}
+                                            variant="detail"
+                                            showFallback={false}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {thumbnailPath && (
-                            <div className="mb-8 rounded-2xl overflow-hidden shadow-lg">
-                                <BookCoverImage
-                                    coverImagePath={thumbnailPath}
+                        {/* Audio Player */}
+                        {audioUrl && lesson.type === "audio" && (
+                            <div className="px-4 md:px-0 no-print">
+                                <AudioPlayer
+                                    src={audioUrl}
                                     title={lesson.title}
-                                    variant="detail"
-                                    showFallback={false}
+                                    initialDuration={parseDurationToSeconds(lesson.duration)}
+                                    audioId={lesson.id}
+                                    table="lessons"
                                 />
                             </div>
                         )}
 
-                        <div className="mb-8">
-                            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 font-display leading-tight">
-                                {lesson.title}
-                            </h1>
-
-                            <div className="flex flex-wrap items-center gap-4 text-text-muted no-print">
-                                <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4" />
-                                    <span>{formatDate(lesson.created_at)}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Eye className="h-4 w-4" />
-                                    <span>{lesson.views_count || 0} مشاهدة</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {getLessonTypeIcon(lesson.lesson_type)}
-                                    <span>{getLessonTypeName(lesson.lesson_type)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {lesson.description && (
-                            <div className="mb-6 text-lg text-text-muted">
-                                {lesson.description.replace(/<[^>]*>/g, '')}
-                            </div>
-                        )}
-
-                        {/* Audio Player */}
-                        {audioUrl && lesson.type === "audio" && (
-                            <div className="mb-8 no-print">
-                                <div className="bg-surface rounded-xl p-6 border border-border">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <Music className="h-5 w-5 text-primary" />
-                                        <h3 className="font-bold text-foreground">استمع إلى الدرس</h3>
-                                    </div>
-                                    <AudioPlayer
-                                        src={audioUrl}
-                                        title={lesson.title}
-                                        initialDuration={parseDurationToSeconds(lesson.duration)}
-                                        audioId={lesson.id}
-                                        table="lessons"
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* YouTube Video */}
+                        {/* YouTube / Video */}
                         {(lesson.youtube_url || (lesson.type === 'video' && audioUrl)) && (
-                            <div className="mb-8 no-print">
-                                <div className="bg-surface rounded-xl p-6 border border-border">
-                                    <div className="aspect-video rounded-lg overflow-hidden">
+                            <div className="px-4 md:px-0 no-print">
+                                <div className="bg-card rounded-xl p-4 md:p-6 border border-border shadow-sm">
+                                    <div className="aspect-video rounded-lg overflow-hidden bg-muted">
                                         {lesson.youtube_url ? (
                                             <iframe
                                                 src={`https://www.youtube.com/embed/${lesson.youtube_url.split("v=")[1]?.split("&")[0] || lesson.youtube_url.split("/").pop()}`}
@@ -341,102 +323,88 @@ export default async function DarsDetailPage({ params }: PageProps) {
 
                         {/* Content */}
                         {lesson.content && (
-                            <SafeHtml
-                                html={lesson.content}
-                                className="prose prose-lg max-w-none mb-12 prose-headings:text-foreground prose-headings:font-bold prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-p:text-foreground prose-p:leading-relaxed prose-p:mb-4 prose-strong:text-foreground prose-strong:font-bold prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-li:mb-1 prose-blockquote:text-foreground prose-blockquote:border-primary prose-blockquote:bg-muted prose-blockquote:p-4 prose-blockquote:rounded-lg prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:p-4 prose-pre:rounded-lg prose-a:text-primary prose-a:underline hover:prose-a:no-underline dark:prose-headings:text-white dark:prose-p:text-gray-300 dark:prose-strong:text-white dark:prose-li:text-gray-300 dark:prose-blockquote:text-white dark:prose-code:text-blue-400 dark:prose-pre:text-gray-200"
-                            />
+                            <article
+                                id="lesson-content"
+                                className="prose prose-lg dark:prose-invert prose-headings:font-display prose-p:font-serif prose-p:text-foreground max-w-none bg-card p-6 md:p-12 rounded-none md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm prose-blockquote:border-r-4 prose-blockquote:border-secondary prose-blockquote:bg-secondary/5 prose-blockquote:text-foreground prose-blockquote:font-serif prose-blockquote:text-xl prose-blockquote:leading-relaxed prose-blockquote:p-4 prose-blockquote:rounded-l-lg prose-blockquote:not-italic prose-blockquote:my-8 prose-strong:text-foreground prose-strong:font-bold prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-li:mb-1 prose-a:text-primary prose-a:underline hover:prose-a:no-underline [&_.quran-verse]:text-foreground [&_.quran-verse_p]:text-foreground [&_.quran-verse_footer]:text-muted-foreground overflow-x-hidden break-words [overflow-wrap:anywhere]"
+                            >
+                                <SafeHtml html={lesson.content} />
+                            </article>
                         )}
 
                         {/* Transcript */}
                         {lesson.transcript && (
-                            <div className="mb-12">
-                                <h2 className="text-2xl font-bold text-foreground mb-4">نص الدرس</h2>
+                            <div className="bg-card rounded-none md:rounded-2xl p-6 md:p-12 border-0 md:border border-border shadow-none md:shadow-sm">
+                                <h2 className="text-2xl font-bold font-display text-foreground mb-6 flex items-center gap-2">
+                                    <span className="w-1 h-7 bg-primary rounded-full"></span>
+                                    نص الدرس
+                                </h2>
                                 <SafeHtml
                                     html={lesson.transcript}
-                                    className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed"
+                                    className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-display prose-p:font-serif prose-p:text-foreground prose-p:leading-relaxed overflow-x-hidden break-words [overflow-wrap:anywhere]"
                                 />
                             </div>
                         )}
 
                         {/* Interactions (Share/Download) */}
-                        <LessonInteractions
-                            audioUrl={audioUrl}
-                            title={lesson.title}
-                            description={lesson.description}
-                            lessonId={lesson.id}
-                            table="lessons"
-                        />
+                        <div className="px-4 md:px-0">
+                            <LessonInteractions
+                                audioUrl={audioUrl}
+                                title={lesson.title}
+                                description={lesson.description}
+                                lessonId={lesson.id}
+                                table="lessons"
+                            />
+                        </div>
+                    </div>
 
-                        {/* Latest Lessons Mobile (Grid Style) */}
+                    {/* Sidebar */}
+                    <div className="lg:col-span-4 px-4 lg:px-0 space-y-8">
+                        <SheikhProfileCard />
+
+                        {/* Related Lessons */}
                         {relatedLessons.length > 0 && (
-                            <div className="no-print lg:hidden mt-12">
-                                <h2 className="text-2xl font-bold text-foreground mb-6">آخر الدروس</h2>
-                                <div className="grid md:grid-cols-3 gap-6">
+                            <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="font-bold text-lg text-card-foreground flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-primary rounded-full"></span>
+                                        دروس ذات صلة
+                                    </h3>
+                                </div>
+                                <div className="space-y-4">
                                     {relatedLessons.map((relatedLesson) => (
-                                        <Link key={relatedLesson.id} href={`/dars/${relatedLesson.slug || relatedLesson.id}`} className="group">
-                                            <div className="bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-colors">
-                                                <BookCoverImage
-                                                    coverImagePath={getThumbnailPath(relatedLesson)}
-                                                    title={relatedLesson.title}
-                                                    variant="card"
-                                                    showFallback={false}
-                                                />
-                                                <div className="p-4">
-                                                    <h3 className="font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                                                        {relatedLesson.title}
-                                                    </h3>
-                                                    <p className="text-sm text-text-muted">{formatDate(relatedLesson.created_at)}</p>
-                                                    <div className="flex items-center gap-2 text-xs text-text-muted mt-2">
-                                                        <Eye className="h-3 w-3" />
-                                                        <span>{relatedLesson.views_count || 0}</span>
+                                        <Link key={relatedLesson.id} href={`/dars/${relatedLesson.slug || relatedLesson.id}`} className="group block">
+                                            <div className="flex gap-4 items-start">
+                                                <div className="w-20 h-20 rounded-lg bg-muted shrink-0 overflow-hidden relative">
+                                                    <div className="absolute inset-0 bg-primary/20 group-hover:bg-primary/40 transition-colors flex items-center justify-center z-10">
+                                                        <Play className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                                                     </div>
+                                                    <BookCoverImage
+                                                        coverImagePath={getThumbnailPath(relatedLesson)}
+                                                        title={relatedLesson.title}
+                                                        variant="card"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-card-foreground group-hover:text-primary transition-colors text-sm leading-snug mb-1">
+                                                        {relatedLesson.title}
+                                                    </h4>
+                                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                        <Clock className="h-3 w-3" />
+                                                        {formatDate(relatedLesson.created_at)}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </Link>
                                     ))}
                                 </div>
-                            </div>
-                        )}
-                    </article>
-
-                    {/* Sidebar */}
-                    <aside className="space-y-6 print:hidden flex flex-col">
-                        <div className="order-2 lg:order-1">
-                            <SheikhProfileCard />
-                        </div>
-
-                        {/* Sidebar Latest Lessons - Hidden on Mobile, Shown on Desktop */}
-                        {relatedLessons.length > 0 && (
-                            <div className="hidden lg:block bg-card rounded-xl p-5 border border-border">
-                                <h3 className="text-lg font-bold text-foreground mb-4">آخر الدروس</h3>
-                                <div className="space-y-4">
-                                    {relatedLessons.map((relatedLesson) => (
-                                        <Link key={relatedLesson.id} href={`/dars/${relatedLesson.slug || relatedLesson.id}`} className="group flex gap-3">
-                                            <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                                                <BookCoverImage
-                                                    coverImagePath={getThumbnailPath(relatedLesson)}
-                                                    title={relatedLesson.title}
-                                                    variant="detail"
-                                                    showFallback={false}
-                                                    className="h-full"
-                                                />
-                                            </div>
-                                            <div className="flex-1">
-                                                <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                                                    {relatedLesson.title}
-                                                </h4>
-                                                <p className="text-xs text-text-muted mt-1">{formatDate(relatedLesson.created_at)}</p>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
+                                <Link href="/dars" className="block text-center text-primary dark:text-secondary text-sm font-bold mt-6 hover:underline">
+                                    عرض المزيد من الدروس
+                                </Link>
                             </div>
                         )}
 
-                        <div className="order-3">
-                            <NewsletterCard />
-                        </div>
-                    </aside>
+                        <NewsletterCard />
+                    </div>
                 </div>
             </div>
         </div>
