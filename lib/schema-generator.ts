@@ -8,7 +8,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://elsayedmourad.com"
 async function getAuthorData() {
     const settings = await getSiteSettings()
     return {
-        name: settings.site_name || settings.site_author || "الشيخ السيد مراد سلامة",
+        // `site_author` must win over `site_name` here. This value feeds the
+    // Person schema, and `site_name` is a *site* label ("موقع الشيخ …"), which
+    // made the Person's name literally read "website of the sheikh" — Google
+    // then cannot match the entity to a real person for a Knowledge Panel.
+    name: settings.site_author || "الشيخ السيد مراد سلامة",
         url: settings.canonical_url || SITE_URL,
         image: settings.og_image || `${SITE_URL}/logo.png`,
         description: settings.meta_description || settings.site_description || "الشيخ السيد مراد عالم أزهري، إمام وخطيب، متخصص في الفقه والعقيدة والسيرة النبوية. يقدم خطبًا ودروسًا ومحاضرات علمية.",
