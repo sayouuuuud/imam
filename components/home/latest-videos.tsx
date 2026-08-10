@@ -37,11 +37,8 @@ function VideoThumbnail({ src, title }: { src: string | null; title: string }) {
 
     if (!src || failed) {
         return (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center bg-primary">
                 <Film className="absolute -left-4 -bottom-6 h-28 w-28 text-primary-foreground/10 rotate-12" strokeWidth={1.2} />
-                <div className="relative w-16 h-16 rounded-full bg-secondary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
-                    <Play className="h-7 w-7 text-secondary-foreground" strokeWidth={1.6} />
-                </div>
             </div>
         )
     }
@@ -50,7 +47,7 @@ function VideoThumbnail({ src, title }: { src: string | null; title: string }) {
         <img
             src={src}
             alt={title}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             referrerPolicy="no-referrer"
             loading="lazy"
             onError={() => setFailed(true)}
@@ -87,37 +84,45 @@ export function LatestVideos({ videos }: LatestVideosProps) {
                             const thumbnailUrl = video.thumbnail || getYouTubeThumbnail(video.url)
                             return (
                                 <Link href={`/videos/${video.id}`} key={video.id} className="group block h-full">
-                                    <article className="flex flex-col h-full bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40">
-                                        {/* Thumbnail */}
-                                        <div className="aspect-[16/10] bg-primary relative overflow-hidden">
-                                            <VideoThumbnail src={thumbnailUrl} title={video.title} />
+                                    <article className="relative flex flex-col h-full aspect-[3/4] rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl ring-1 ring-border/60 group-hover:ring-primary/40">
+                                        {/* Thumbnail fills the whole card */}
+                                        <VideoThumbnail src={thumbnailUrl} title={video.title} />
 
-                                            {/* Play overlay */}
-                                            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                                <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center shadow-lg">
-                                                    <Play className="w-6 h-6 text-secondary-foreground" strokeWidth={1.8} />
-                                                </div>
+                                        {/* Permanent gradient for text legibility */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/20 to-transparent opacity-90" />
+
+                                        {/* Center play button */}
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="w-14 h-14 rounded-full bg-secondary/95 flex items-center justify-center shadow-lg scale-90 opacity-90 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
+                                                <Play className="w-6 h-6 text-secondary-foreground" strokeWidth={1.8} />
                                             </div>
-
-                                            {video.duration && (
-                                                <span className="absolute bottom-2.5 left-2.5 bg-foreground/80 text-background text-xs font-medium px-2 py-1 rounded-md">
-                                                    {video.duration}
-                                                </span>
-                                            )}
                                         </div>
 
-                                        {/* Content */}
-                                        <div className="flex flex-col flex-1 p-5">
-                                            <h3 className="text-base lg:text-lg font-bold mb-2 text-card-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                                        {/* Duration badge */}
+                                        {video.duration && (
+                                            <span className="absolute top-3 left-3 bg-background/90 text-foreground text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1">
+                                                <Clock className="w-3 h-3" />
+                                                {video.duration}
+                                            </span>
+                                        )}
+
+                                        {/* Category chip */}
+                                        <span className="absolute top-3 right-3 bg-secondary text-secondary-foreground text-xs font-bold px-2.5 py-1 rounded-md">
+                                            فيديو
+                                        </span>
+
+                                        {/* Title + meta over the gradient */}
+                                        <div className="relative mt-auto z-10 p-4">
+                                            <h3 className="text-background font-bold leading-snug line-clamp-2 mb-2 text-base lg:text-lg">
                                                 {video.title}
                                             </h3>
-
-                                            <div className="mt-auto pt-3 border-t border-border/60 flex items-center justify-between">
-                                                <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                                    <Clock className="w-3.5 h-3.5" />
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-background/80 text-xs flex items-center gap-1.5">
                                                     {formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: ar })}
                                                 </span>
-                                                <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1 transition-all" />
+                                                <span className="w-7 h-7 rounded-full bg-background/15 flex items-center justify-center group-hover:bg-secondary transition-colors">
+                                                    <ArrowLeft className="w-3.5 h-3.5 text-background group-hover:text-secondary-foreground group-hover:-translate-x-0.5 transition-all" />
+                                                </span>
                                             </div>
                                         </div>
                                     </article>
