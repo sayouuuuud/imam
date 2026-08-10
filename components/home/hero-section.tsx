@@ -155,7 +155,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 bg-card px-4 py-2 rounded-full border border-border shadow-sm transition-all duration-300 group-hover:shadow-md">
                 <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-                <span className="text-sm text-secondary font-medium">حديث اليوم</span>
+                <span className="text-sm text-secondary font-medium">حديث الشهر</span>
               </div>
 
               <h1
