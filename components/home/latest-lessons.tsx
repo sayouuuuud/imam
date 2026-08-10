@@ -17,6 +17,7 @@ interface ContentItem {
   read_time?: number | null
   duration?: string | null
   author?: string | null
+  url?: string | null
 }
 
 interface LatestContentProps {
@@ -38,8 +39,8 @@ const getThumbnailUrl = (item: ContentItem) => {
     return `/api/download?key=${encodeURIComponent(thumbnail)}`
   }
 
-  if (item.content_type === "video" && !thumbnail && (item as any).url) {
-    return getYouTubeThumbnail((item as any).url)
+  if (item.content_type === "video" && !thumbnail && item.url) {
+    return getYouTubeThumbnail(item.url)
   }
 
   return thumbnail || null
@@ -60,9 +61,9 @@ export function LatestContent({ content }: LatestContentProps) {
           <ArrowLeft className="h-3.5 w-3.5" />
         </Link>
       </div>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {content.length === 0 ? (
-          <div className="text-center py-12 bg-card/50 dark:bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60">
+          <div className="md:col-span-2 text-center py-12 bg-card/50 dark:bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60">
             <FileText className="h-12 w-12 mx-auto text-text-muted/30 mb-4" />
             <p className="text-text-muted">لا توجد محتويات حالياً</p>
           </div>
@@ -217,4 +218,3 @@ export function LatestContent({ content }: LatestContentProps) {
     </div>
   )
 }
-
