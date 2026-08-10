@@ -31,7 +31,9 @@ function stripHtml(html: string | undefined): string {
 
 export function LatestSermons({ sermons }: LatestSermonsProps) {
     return (
-        <section className="py-16 bg-muted/40 border-b border-border/60 relative">
+        <section className="py-16 bg-muted relative">
+            {/* Smooth gradient blend overlay */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 from-background via-muted/30 to-transparent pointer-events-none" />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 {/* Header */}
                 <div className="flex justify-between items-end mb-12">

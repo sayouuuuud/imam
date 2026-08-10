@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { BookCoverImage } from "@/components/book-cover-image"
 import { ArrowLeft, Download, Eye, PenLine } from "lucide-react"
 
 interface Book {
@@ -19,6 +19,22 @@ interface FeaturedBooksProps {
   books: Book[]
 }
 
+function BookCover({ coverImagePath, title }: { coverImagePath: string | null; title: string }) {
+  const [failed, setFailed] = useState(false)
+  const src = !failed && coverImagePath ? coverImagePath : "/default-book-cover.png"
+
+  return (
+    <img
+      src={src}
+      alt={title}
+      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      referrerPolicy="no-referrer"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 export function FeaturedBooks({ books }: FeaturedBooksProps) {
   const handleDownload = async (bookId: string, currentCount: number) => {
     const supabase = createClient()
@@ -29,7 +45,7 @@ export function FeaturedBooks({ books }: FeaturedBooksProps) {
   }
 
   return (
-    <section className="py-16 lg:py-20 relative">
+    <section className="py-16 lg:py-20 bg-surface relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-end gap-4 mb-10">
@@ -61,23 +77,8 @@ export function FeaturedBooks({ books }: FeaturedBooksProps) {
               >
                 {/* Cover */}
                 <Link href={`/books/${book.id}`} className="block relative aspect-[3/4] overflow-hidden bg-muted">
-                  {/* Default cover shown when no image exists or it fails to load */}
-                  <img
-                    src="/default-book-cover.png"
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  {book.cover_image_path && (
-                    <BookCoverImage
-                      coverImagePath={book.cover_image_path}
-                      title={book.title}
-                      variant="detail"
-                      showFallback={false}
-                      className="absolute inset-0 h-full rounded-none shadow-none"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/10 to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
+                  <BookCover coverImagePath={book.cover_image_path} title={book.title} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/10 to-transparent" />
                   <span className="absolute bottom-3 right-3 left-3 text-background text-xs font-bold line-clamp-2 leading-snug drop-shadow">
                     {book.title}
                   </span>

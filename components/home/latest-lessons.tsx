@@ -46,151 +46,175 @@ const getThumbnailUrl = (item: ContentItem) => {
   return thumbnail || null
 }
 
-const TYPE_META: Record<
-  ContentItem["content_type"],
-  { label: string; href: (id: string) => string; badge: string; icon: React.ReactNode }
-> = {
-  article: {
-    label: "مقالة",
-    href: (id) => `/articles/${id}`,
-    badge: "bg-primary/10 text-primary border-primary/20",
-    icon: <FileText className="h-5 w-5" />,
-  },
-  sermon: {
-    label: "خطبة",
-    href: (id) => `/khutba/${id}`,
-    badge: "bg-secondary/10 text-secondary border-secondary/20",
-    icon: <Mic className="h-5 w-5" />,
-  },
-  lesson: {
-    label: "درس",
-    href: (id) => `/dars/${id}`,
-    badge: "bg-primary/10 text-primary border-primary/20",
-    icon: <Play className="h-5 w-5" />,
-  },
-  book: {
-    label: "كتاب",
-    href: (id) => `/books/${id}`,
-    badge: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-    icon: <BookOpen className="h-5 w-5" />,
-  },
-  video: {
-    label: "مرئي",
-    href: (id) => `/videos/${id}`,
-    badge: "bg-red-500/10 text-red-500 border-red-500/20",
-    icon: <Video className="h-5 w-5" />,
-  },
-}
-
 export function LatestContent({ content }: LatestContentProps) {
   return (
     <div>
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <span className="bg-secondary/10 text-secondary p-2.5 rounded-xl border border-secondary/20">
             <FileText className="h-5 w-5" />
           </span>
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold font-serif text-foreground leading-tight">أحدث المحتويات</h2>
-            <p className="text-sm text-muted-foreground mt-1">جديد الدروس والخطب والمقالات والكتب في مكان واحد.</p>
-          </div>
+          <h3 className="text-2xl font-bold font-serif text-foreground">أحدث المحتويات</h3>
         </div>
-        <Link
-          href="/search"
-          className="text-xs font-bold text-primary hover:text-primary/70 flex items-center gap-1.5 bg-primary/5 px-4 py-2 rounded-full border border-primary/10 transition-all"
-        >
+        <Link href="/articles" className="text-xs font-bold text-primary hover:text-primary/70 flex items-center gap-1.5 bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10 transition-all">
           المكتبة الكاملة
           <ArrowLeft className="h-3.5 w-3.5" />
         </Link>
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {content.length === 0 ? (
+          <div className="md:col-span-2 text-center py-12 bg-card/50 dark:bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60">
+            <FileText className="h-12 w-12 mx-auto text-text-muted/30 mb-4" />
+            <p className="text-text-muted">لا توجد محتويات حالياً</p>
+          </div>
+        ) : (
+          content.map((item) => {
+            const getItemUrl = () => {
+              switch (item.content_type) {
+                case "article":
+                  return `/articles/${item.id}`
+                case "sermon":
+                  return `/khutba/${item.id}`
+                case "lesson":
+                  return `/dars/${item.id}`
+                case "book":
+                  return `/books/${item.id}`
+                case "video":
+                  return `/videos/${item.id}`
+                default:
+                  return "#"
+              }
+            }
 
-      {content.length === 0 ? (
-        <div className="text-center py-16 bg-card/60 dark:bg-card/40 backdrop-blur-sm rounded-2xl border border-border/60">
-          <FileText className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">لا توجد محتويات حالياً</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {content.map((item) => {
-            const meta = TYPE_META[item.content_type] ?? TYPE_META.article
+            const getItemIcon = () => {
+              switch (item.content_type) {
+                case "article":
+                  return <FileText className="h-5 w-5 text-primary" />
+                case "sermon":
+                  return <Mic className="h-5 w-5 text-secondary" />
+                case "lesson":
+                  return <Play className="h-5 w-5 text-primary" />
+                case "book":
+                  return <BookOpen className="h-5 w-5 text-emerald-600" />
+                case "video":
+                  return <Video className="h-5 w-5 text-red-500" />
+                default:
+                  return <FileText className="h-5 w-5 text-primary" />
+              }
+            }
+
+            const getItemTypeLabel = () => {
+              switch (item.content_type) {
+                case "article":
+                  return "مقالة"
+                case "sermon":
+                  return "خطبة"
+                case "lesson":
+                  return "درس"
+                case "book":
+                  return "كتاب"
+                case "video":
+                  return "مرئي"
+                default:
+                  return ""
+              }
+            }
+
+            const getItemTypeColor = () => {
+              switch (item.content_type) {
+                case "article":
+                  return "bg-primary/10 text-primary border-primary/20"
+                case "sermon":
+                  return "bg-secondary/10 text-secondary border-secondary/20"
+                case "lesson":
+                  return "bg-primary/10 text-primary border-primary/20"
+                case "book":
+                  return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                case "video":
+                  return "bg-red-500/10 text-red-500 border-red-500/20"
+                default:
+                  return "bg-primary/10 text-primary border-primary/20"
+              }
+            }
+
             const description = item.excerpt || item.description
             const cleanDescription = description ? stripHtml(description) : ""
+
             const thumbnailUrl = getThumbnailUrl(item)
-            const metaLine = item.read_time ? `${item.read_time} دقيقة قراءة` : item.duration
+            const showThumbnail = thumbnailUrl
 
             return (
               <Link
                 key={`${item.content_type}-${item.id}`}
-                href={meta.href(item.id)}
-                className="group flex flex-col bg-card/70 dark:bg-card/40 backdrop-blur-sm border border-border/60 dark:border-border/30 rounded-2xl overflow-hidden transition-all duration-300 hover:border-primary/40 hover:-translate-y-1 shadow-sm hover:shadow-xl"
+                href={getItemUrl()}
+                className="group block bg-card/40 dark:bg-card/30 backdrop-blur-sm border border-border/60 dark:border-border/30 rounded-xl p-4 transition-all duration-300 hover:border-primary/40 hover:bg-muted/30 dark:hover:bg-white/5 shadow hover:shadow-lg"
               >
-                <div className="relative aspect-[16/9] bg-muted overflow-hidden">
-                  {thumbnailUrl ? (
-                    item.content_type === "book" ? (
-                      <>
-                        <img
-                          src={thumbnailUrl}
-                          alt=""
-                          aria-hidden="true"
-                          className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-50"
-                          referrerPolicy="no-referrer"
-                          loading="lazy"
-                        />
-                        <img
-                          src={thumbnailUrl}
-                          alt={item.title}
-                          className="relative w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-                          referrerPolicy="no-referrer"
-                          loading="lazy"
-                        />
-                      </>
-                    ) : (
-                      <img
-                        src={thumbnailUrl}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        referrerPolicy="no-referrer"
-                        loading="lazy"
-                      />
-                    )
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
-                      <span className="text-primary/50 [&>svg]:h-10 [&>svg]:w-10">{meta.icon}</span>
-                    </div>
-                  )}
-                  <span
-                    className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-md border backdrop-blur-md bg-background/80 ${meta.badge}`}
+                <div className="flex gap-4">
+                  <div
+                    className={`flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center border ${showThumbnail ? 'border-border/40' : getItemTypeColor()}`}
                   >
-                    {meta.label}
-                  </span>
-                </div>
+                    {showThumbnail ? (
+                      <img
+                        src={thumbnailUrl!}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="transition-transform duration-300 group-hover:scale-110">
+                        {getItemIcon()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${getItemTypeColor()}`}>
+                          {getItemTypeLabel()}
+                        </span>
+                        <span className="text-[10px] font-medium text-text-muted">
+                          {formatDistanceToNow(new Date(item.created_at), {
+                            addSuffix: true,
+                            locale: ar,
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                    <h4 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 leading-tight mb-1">
+                      {item.title}
+                    </h4>
 
-                <div className="flex flex-col flex-1 p-5">
-                  <h3 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug mb-2">
-                    {item.title}
-                  </h3>
-                  {cleanDescription && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-4">
-                      {cleanDescription}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-border/50 text-[11px] text-muted-foreground">
-                    <span className="font-medium">
-                      {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: ar })}
-                    </span>
-                    {metaLine && (
-                      <span className="flex items-center gap-1.5 font-bold">
-                        <Clock className="h-3 w-3" />
-                        {metaLine}
-                      </span>
+                    {/* Special Layout for Lessons */}
+                    {item.content_type === "lesson" && (
+                      <div className="flex items-center justify-between text-[11px] text-text-muted">
+                        <p className="font-medium opacity-80">{item.author || "السيد مراد سلامة"}</p>
+                      </div>
+                    )}
+
+                    {/* Default Layout for others */}
+                    {item.content_type !== "lesson" && (
+                      <>
+                        {(item.content_type === "book" || item.content_type === "article") && item.author && (
+                          <p className="text-[11px] text-text-muted font-medium opacity-80">{item.author}</p>
+                        )}
+                        {cleanDescription && item.content_type !== "book" && (
+                          <p className="text-xs text-text-muted line-clamp-1 opacity-70 mt-1">{cleanDescription}</p>
+                        )}
+                        {(item.read_time || item.duration) && (
+                          <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-text-muted/60 uppercase">
+                            <Clock className="h-3 w-3" />
+                            <span>{item.read_time ? `${item.read_time} دقيقة قراءة` : item.duration}</span>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
               </Link>
             )
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   )
 }

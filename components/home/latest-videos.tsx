@@ -45,7 +45,7 @@ function getYouTubeThumbnail(url: string | undefined): string | null {
 
 export function LatestVideos({ videos }: LatestVideosProps) {
     return (
-        <section className="py-16 relative">
+        <section className="py-16 bg-background relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 {/* Header */}
                 <div className="flex justify-between items-end mb-12">

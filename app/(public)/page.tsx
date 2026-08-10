@@ -190,14 +190,14 @@ export default async function HomePage() {
 
 
   return (
-    <div className="bg-[#fdfbf7] dark:bg-background bg-pattern">
+    <>
 
       <ScrollAnimation>
         <HeroSection data={heroData} />
       </ScrollAnimation>
 
       {/* Latest Content Section - Full Width */}
-      <section className="py-12 lg:py-16 relative">
+      <section className="py-12 lg:py-16 bg-surface relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <ScrollAnimation delay={0.1}>
             <LatestContent content={latestContent} />
@@ -224,6 +224,6 @@ export default async function HomePage() {
       <ScrollAnimation delay={0.5}>
         <NewsletterSection />
       </ScrollAnimation>
-    </div>
+    </>
   )
 }
