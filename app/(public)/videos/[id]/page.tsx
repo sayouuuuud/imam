@@ -33,38 +33,6 @@ export async function generateStaticParams() {
   return (data || []).map((v) => ({ id: v.id as string }))
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = await params
-  const supabase = createPublicClient()
-  const { data: video } = await supabase.from("media").select("title, description, thumbnail, source, url").eq("id", id).single()
-
-  if (!video) return { title: "الفيديو غير موجود", robots: { index: false, follow: false } }
-
-  const ogImage = getVideoOgImage(video)
-  const canonicalPath = `/videos/${id}`
-
-  return {
-    title: `${video.title} | الشيخ السيد مراد سلامة`,
-    description: video.description ? stripHtml(video.description).slice(0, 160) : undefined,
-    alternates: {
-      canonical: canonicalPath,
-    },
-    openGraph: {
-      title: video.title,
-      description: video.description ? stripHtml(video.description).slice(0, 160) : undefined,
-      images: [ogImage],
-      type: "video.other",
-      url: canonicalPath,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: video.title,
-      description: video.description ? stripHtml(video.description).slice(0, 160) : undefined,
-      images: [ogImage.url],
-    },
-  }
-}
-
 // Helper functions
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
@@ -73,6 +41,90 @@ const formatDate = (dateString: string) => {
     month: "long",
     day: "numeric",
   })
+}
+
+/**
+ * Roughly 40% of the 510 video rows have an empty or near-empty description.
+ * Google treats those pages as thin content, so instead of shipping no
+ * description at all we synthesise one from the metadata we *do* have
+ * (title, category, date, duration). Every generated sentence differs per
+ * video, so this is not boilerplate duplicated across the site.
+ */
+// 167 media rows literally store "<p>No description available</p>" and 14 store
+// just "الوصف". Those are import artefacts, not content — never surface them.
+const PLACEHOLDER_DESCRIPTIONS = new Set(["no description available", "الوصف", "-", "لا يوجد وصف"])
+
+function cleanDescription(raw?: string | null): string {
+  if (!raw) return ""
+  const text = stripHtml(raw).replace(/\s+/g, " ").trim()
+  if (!text || PLACEHOLDER_DESCRIPTIONS.has(text.toLowerCase())) return ""
+  return text
+}
+
+function buildVideoDescription(video: {
+  title: string
+  description?: string | null
+  created_at?: string | null
+  duration?: string | null
+}, categoryName?: string | null): string {
+  const existing = cleanDescription(video.description)
+  if (existing.length >= 50) return existing
+
+  const parts: string[] = [`مقطع مرئي بعنوان «${video.title}» للشيخ السيد مراد سلامة`]
+  if (categoryName) parts.push(`ضمن قسم ${categoryName}`)
+  if (video.created_at) parts.push(`نُشر بتاريخ ${formatDate(video.created_at)}`)
+
+  let text = parts.join("، ")
+  if (video.duration) text += ` ومدته ${video.duration}`
+  text += "."
+  // Keep whatever short description the row already had — it still adds signal.
+  if (existing) text += ` ${existing}.`
+  text += " شاهد المقطع كاملًا على موقع الشيخ السيد مراد سلامة."
+  return text
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+  const supabase = createPublicClient()
+  const { data: video } = await supabase
+    .from("media")
+    .select("title, description, thumbnail, source, url, created_at, duration, category_id")
+    .eq("id", id)
+    .eq("publish_status", "published")
+    .single()
+
+  if (!video) return { title: "الفيديو غير موجود", robots: { index: false, follow: false } }
+
+  let categoryName: string | null = null
+  if (video.category_id) {
+    const { data: category } = await supabase.from("categories").select("name").eq("id", video.category_id).single()
+    categoryName = category?.name ?? null
+  }
+
+  const ogImage = getVideoOgImage(video)
+  const canonicalPath = `/videos/${id}`
+  const description = buildVideoDescription(video, categoryName).slice(0, 200)
+
+  return {
+    title: `${video.title} | الشيخ السيد مراد سلامة`,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      title: video.title,
+      description,
+      images: [ogImage],
+      type: "video.other",
+      url: canonicalPath,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: video.title,
+      description,
+      images: [ogImage.url],
+    },
+  }
 }
 
 const formatViews = (views: number): string => {
@@ -108,32 +160,65 @@ export default async function VideoDetailPage({ params }: PageProps) {
   const { id } = await params
   const supabase = createPublicClient()
 
-  // Parallel data fetching
-  const [videoResponse, relatedVideosResponse] = await Promise.all([
-    supabase.from("media").select("*").eq("id", id).eq("publish_status", "published").single(),
-    supabase.from("media").select("id, title, thumbnail, created_at, views_count, duration").eq("publish_status", "published").neq("id", id).limit(2).order("created_at", { ascending: false })
-  ])
-
-  const video = videoResponse.data
+  const { data: video } = await supabase
+    .from("media")
+    .select("*")
+    .eq("id", id)
+    .eq("publish_status", "published")
+    .single()
 
   if (!video) {
     notFound()
   }
 
-  // Fetch category name
-  let categoryName = null
-  if (video.category_id) {
-    const { data: category } = await supabase.from("categories").select("name").eq("id", video.category_id).single()
-    categoryName = category?.name || null
+  const RELATED_SELECT = "id, title, thumbnail, source, url, created_at, views_count, duration"
+  const RELATED_LIMIT = 8
+
+  // Fetch the category name and same-category siblings in parallel.
+  // The old version linked to only 2 videos picked purely by recency, which
+  // left the ~500 older videos almost orphaned — nothing linked to them, so
+  // Google had no crawl path in. Same-category links fix that.
+  const [categoryResponse, sameCategoryResponse] = await Promise.all([
+    video.category_id
+      ? supabase.from("categories").select("name").eq("id", video.category_id).single()
+      : Promise.resolve({ data: null }),
+    video.category_id
+      ? supabase
+          .from("media")
+          .select(RELATED_SELECT)
+          .eq("publish_status", "published")
+          .eq("category_id", video.category_id)
+          .neq("id", id)
+          .order("created_at", { ascending: false })
+          .limit(RELATED_LIMIT)
+      : Promise.resolve({ data: [] as any[] }),
+  ])
+
+  const categoryName = (categoryResponse.data as { name?: string } | null)?.name || null
+
+  let relatedVideos: any[] = (sameCategoryResponse.data as any[]) || []
+
+  // Top up with recent videos when the category is too small to fill the rail.
+  if (relatedVideos.length < RELATED_LIMIT) {
+    const excludeIds = [id, ...relatedVideos.map((v) => v.id)]
+    const { data: fallback } = await supabase
+      .from("media")
+      .select(RELATED_SELECT)
+      .eq("publish_status", "published")
+      .not("id", "in", `(${excludeIds.join(",")})`)
+      .order("created_at", { ascending: false })
+      .limit(RELATED_LIMIT - relatedVideos.length)
+    relatedVideos = [...relatedVideos, ...((fallback as any[]) || [])]
   }
 
-  const relatedVideos = relatedVideosResponse.data || []
+  const description = buildVideoDescription(video, categoryName)
+  const hasRichDescription = cleanDescription(video.description).length >= 50
   const thumbnailUrl = getThumbnailUrl(video)
   const videoId = video.source === "youtube" ? getYouTubeVideoId(video.url) : null
 
   const videoSchema = await generateVideoSchema({
     title: video.title,
-    description: video.description ? stripHtml(video.description) : video.title,
+    description,
     uploadDate: video.created_at,
     url: `/videos/${video.id}`,
     thumbnail: thumbnailUrl.startsWith('http') ? thumbnailUrl : `https://elsayedmourad.com${thumbnailUrl}`,
@@ -231,16 +316,18 @@ export default async function VideoDetailPage({ params }: PageProps) {
                 <VideoInteractions title={video.title} />
               </div>
 
-              {video.description && (
-                <div className="bg-surface rounded-xl p-6 border border-border">
-                  <h3 className="font-bold text-foreground mb-4 text-lg">
-                    وصف الفيديو
-                  </h3>
-                  <div className="prose prose-lg dark:prose-invert prose-p:font-body prose-p:text-foreground/90 max-w-none">
+              <div className="bg-surface rounded-xl p-6 border border-border">
+                <h3 className="font-bold text-foreground mb-4 text-lg">
+                  وصف الفيديو
+                </h3>
+                <div className="prose prose-lg dark:prose-invert prose-p:font-body prose-p:text-foreground/90 max-w-none">
+                  {hasRichDescription ? (
                     <SafeHtml html={video.description} />
-                  </div>
+                  ) : (
+                    <p className="leading-relaxed">{description}</p>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Share Section (legacy placeholder - now handled by VideoInteractions but kept structure if needed) */}
             </div>
@@ -251,7 +338,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
             <div className="sticky top-8 space-y-6">
               <SheikhProfileCard />
               <h3 className="text-xl font-bold text-foreground mb-6">
-                فيديوهات ذات صلة
+                {categoryName ? `المزيد من ${categoryName}` : "فيديوهات ذات صلة"}
               </h3>
 
               {relatedVideos.length > 0 ? (
