@@ -23,19 +23,33 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 
+  // A view counter is telemetry, not part of the page contract. Every failure
+  // path below returns 200 with `counted: false` so a missing env var, a
+  // missing RPC, or a Supabase outage can never surface as a red error in the
+  // visitor's console or pollute error monitoring. Details go to server logs
+  // only, where they are actionable.
   if (!serviceKey || !supabaseUrl) {
-    return NextResponse.json({ error: "SUPABASE_SERVICE_ROLE_KEY غير مضبوط" }, { status: 500 })
+    console.error("[views] SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL is not set")
+    return NextResponse.json({ ok: true, counted: false })
   }
 
-  const supabase = createServiceClient(supabaseUrl, serviceKey)
+  try {
+    const supabase = createServiceClient(supabaseUrl, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    })
 
-  // Atomic increment via RPC — avoids the read-then-write race of
-  // `update({ views_count: current + 1 })` under concurrent requests.
-  const { error } = await supabase.rpc("increment_views", { p_table: table, p_id: id })
+    // Atomic increment via RPC — avoids the read-then-write race of
+    // `update({ views_count: current + 1 })` under concurrent requests.
+    const { error } = await supabase.rpc("increment_views", { p_table: table, p_id: id })
 
-  if (error) {
-    return NextResponse.json({ error: "تعذر تحديث عدد المشاهدات" }, { status: 500 })
+    if (error) {
+      console.error(`[views] increment_views failed for ${table}/${id}:`, error.message)
+      return NextResponse.json({ ok: true, counted: false })
+    }
+  } catch (err) {
+    console.error(`[views] unexpected failure for ${table}/${id}:`, err)
+    return NextResponse.json({ ok: true, counted: false })
   }
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, counted: true })
 }

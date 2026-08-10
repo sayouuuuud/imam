@@ -1,10 +1,36 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-// Cache redirects for 5 minutes to avoid hitting DB on every request
-let redirectsCache: { source_path: string; destination_path: string; redirect_type: number }[] | null = null
+type RedirectRow = { source_path: string; destination_path: string; redirect_type: number }
+
+// Cache redirects to avoid hitting the DB on every request. The table is
+// currently empty, and an empty result is the common case — so we cache the
+// "nothing to do" answer for much longer than a populated one. Otherwise every
+// cold lambda pays a Supabase round-trip before rendering anything.
+let redirectsCache: Map<string, RedirectRow> | null = null
 let cacheTimestamp = 0
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+let cacheTtl = 0
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes when redirects exist
+const EMPTY_CACHE_TTL = 30 * 60 * 1000 // 30 minutes when the table is empty
+
+// One Supabase client per lambda instance instead of one per request.
+let supabaseSingleton: ReturnType<typeof createClient> | null = null
+
+function getSupabase() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey || supabaseUrl === "https://placeholder.supabase.co") {
+    return null
+  }
+
+  if (!supabaseSingleton) {
+    supabaseSingleton = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    })
+  }
+  return supabaseSingleton
+}
 
 // Canonical production host — read from env. This is the host that all
 // legacy traffic (the old .online domain) should be 301'd to.
@@ -28,34 +54,31 @@ const CANONICAL_HOST = (() => {
 // here (see comment above).
 const LEGACY_HOST_SUFFIX = "elsayed-mourad.online"
 
-async function getRedirects() {
+const EMPTY_REDIRECTS: Map<string, RedirectRow> = new Map()
+
+async function getRedirects(): Promise<Map<string, RedirectRow>> {
   const now = Date.now()
-  if (redirectsCache && now - cacheTimestamp < CACHE_TTL) {
+  if (redirectsCache && now - cacheTimestamp < cacheTtl) {
     return redirectsCache
   }
 
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey || supabaseUrl === "https://placeholder.supabase.co") {
-      return []
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    })
+    const supabase = getSupabase()
+    if (!supabase) return EMPTY_REDIRECTS
 
     const { data } = await supabase
       .from("redirects")
       .select("source_path, destination_path, redirect_type")
       .eq("is_active", true)
 
-    redirectsCache = data || []
+    const rows = (data || []) as RedirectRow[]
+    // A Map keeps lookup O(1) instead of scanning the array on every request.
+    redirectsCache = new Map(rows.map((r) => [r.source_path, r]))
     cacheTimestamp = now
+    cacheTtl = rows.length === 0 ? EMPTY_CACHE_TTL : CACHE_TTL
     return redirectsCache
   } catch {
-    return []
+    return EMPTY_REDIRECTS
   }
 }
 
@@ -99,7 +122,7 @@ export async function proxy(request: NextRequest) {
 
   try {
     const redirects = await getRedirects()
-    const match = redirects.find((r) => r.source_path === pathname)
+    const match = redirects.get(pathname)
 
     if (match) {
       const destination = match.destination_path.startsWith("http")
@@ -107,12 +130,8 @@ export async function proxy(request: NextRequest) {
         : `${url.origin}${match.destination_path}`
 
       // Fire-and-forget: increment hit count
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      if (supabaseUrl && supabaseKey && supabaseUrl !== "https://placeholder.supabase.co") {
-        const supabase = createClient(supabaseUrl, supabaseKey, {
-          auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-        })
+      const supabase = getSupabase()
+      if (supabase) {
         void supabase.rpc("increment_redirect_hits", { source: pathname })
       }
 

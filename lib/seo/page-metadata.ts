@@ -96,13 +96,21 @@ export async function buildPageMetadata(
 
   const canonicalUrl = normalized === "/" ? canonicalBase : `${canonicalBase}${normalized}`
 
-  const siteName = site.site_name || "الشيخ السيد مراد"
-  const title =
+  const siteName = site.site_name || "السيد مراد سلامة"
+  const resolvedTitle =
     pageRow?.page_title ||
     fallback.title ||
     site.meta_title ||
     site.site_title ||
     siteName
+
+  // The root layout defines `title.template` as "%s | <siteName>". When a page
+  // title already contains the brand — which the homepage title does — the
+  // template produced "…الشيخ السيد مراد سلامة | موقع الشيخ السيد مراد سلامة":
+  // the brand twice in ~63 characters, so Google truncated it mid-phrase.
+  // Opting out of the template for those titles keeps the tab and SERP clean.
+  const alreadyBranded = resolvedTitle.includes(siteName) || normalized === "/"
+  const title = alreadyBranded ? { absolute: resolvedTitle } : resolvedTitle
 
   const description =
     pageRow?.meta_description ||
@@ -122,7 +130,9 @@ export async function buildPageMetadata(
     .map((k: string) => k.trim())
     .filter(Boolean)
 
-  const ogTitle = pageRow?.og_title || title
+  // Use `resolvedTitle`, not `title` — the latter may be a `{ absolute }`
+  // object, which would serialise into the og:title tag as "[object Object]".
+  const ogTitle = pageRow?.og_title || resolvedTitle
   const ogDescription = pageRow?.og_description || description
   const ogImage =
     pageRow?.og_image || fallback.image || site.og_image || "/og-default.jpg"
