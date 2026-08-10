@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { ar } from "date-fns/locale"
-import { ArrowLeft, Clock, Scroll } from "lucide-react"
+import { ArrowLeft, Clock, Mic } from "lucide-react"
 
 interface Sermon {
     id: string
@@ -61,9 +61,9 @@ export function LatestSermons({ sermons }: LatestSermonsProps) {
                                 <article className="flex flex-col h-full bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40">
                                     {/* Header */}
                                     <div className="aspect-[16/10] bg-primary relative overflow-hidden flex items-center justify-center">
-                                        <Scroll className="absolute -left-4 -bottom-6 h-28 w-28 text-primary-foreground/10 rotate-12" strokeWidth={1.2} />
+                                        <Mic className="absolute -left-4 -bottom-6 h-28 w-28 text-primary-foreground/10 rotate-12" strokeWidth={1.2} />
                                         <div className="relative w-16 h-16 rounded-full bg-secondary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
-                                            <Scroll className="h-7 w-7 text-secondary-foreground" strokeWidth={1.6} />
+                                            <Mic className="h-7 w-7 text-secondary-foreground" strokeWidth={1.6} />
                                         </div>
                                     </div>
 
