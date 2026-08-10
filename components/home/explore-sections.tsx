@@ -1,112 +1,98 @@
-"use client"
-
 import Link from "next/link"
-import { MonitorPlay, BookOpen, GraduationCap, FileText, Mic, ArrowLeft } from "lucide-react"
+import { MonitorPlay, BookOpen, GraduationCap, FileText, Mic, CalendarDays, ArrowLeft, Compass } from "lucide-react"
+
+const sections = [
+    {
+        href: "/khutba",
+        title: "الخطب المنبرية",
+        description: "خطب الجمعة والأعياد والمناسبات، مؤرشفة صوتياً ونصياً للرجوع إليها في أي وقت.",
+        icon: Mic,
+    },
+    {
+        href: "/dars",
+        title: "الدروس العلمية",
+        description: "سلاسل متكاملة في الفقه والعقيدة والسيرة، مرتبة درساً بعد درس.",
+        icon: GraduationCap,
+    },
+    {
+        href: "/articles",
+        title: "المقالات والبحوث",
+        description: "كتابات دورية تناقش القضايا المعاصرة برؤية شرعية مؤصلة.",
+        icon: FileText,
+    },
+    {
+        href: "/videos",
+        title: "المرئيات",
+        description: "مقاطع مرئية قصيرة ولقاءات مصوّرة من الدروس والمحاضرات.",
+        icon: MonitorPlay,
+    },
+    {
+        href: "/books",
+        title: "المكتبة المقروءة",
+        description: "مؤلفات الشيخ وكتبه متاحة للقراءة والتحميل بصيغة PDF.",
+        icon: BookOpen,
+    },
+    {
+        href: "/schedule",
+        title: "المواعيد والجدول",
+        description: "مواعيد الدروس الأسبوعية والفعاليات القادمة في مكان واحد.",
+        icon: CalendarDays,
+    },
+]
 
 export function ExploreSections() {
     return (
-        <section className="py-20 bg-muted/30 relative overflow-hidden">
+        <section className="py-16 lg:py-24 relative overflow-hidden border-y border-border/60">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
                 {/* Header */}
-                <div className="text-center mb-16">
-                    <div className="inline-flex items-center justify-center p-3 bg-white dark:bg-slate-800 rounded-full shadow-sm mb-4">
-                        <BookOpen className="h-6 w-6 text-[#035d44] dark:text-emerald-400" />
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                    <div className="flex items-start gap-4">
+                        <span className="shrink-0 w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                            <Compass className="h-6 w-6" />
+                        </span>
+                        <div>
+                            <h2 className="text-3xl md:text-4xl font-bold font-serif text-foreground leading-tight">
+                                استكشف العلم أكثر
+                            </h2>
+                            <p className="text-muted-foreground mt-2 max-w-xl text-pretty">
+                                كل أقسام الموقع مرتبة أمامك، اختر بابك وابدأ الطلب.
+                            </p>
+                        </div>
                     </div>
-                    <h2 className="text-4xl font-bold mb-4 font-serif text-foreground">استكشف العلم أكثر</h2>
-                    <p className="text-muted-foreground max-w-xl mx-auto">تصفح أقسام الموقع المتنوعة للوصول إلى المحتوى.</p>
+                    <div className="hidden md:block h-px flex-1 bg-gradient-to-l from-border to-transparent mb-3" />
                 </div>
 
-                {/* Grid Container */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                    {/* Khutba Card (1/3 width) - Placed FIRST to appear on Right in RTL */}
-                    <div className="lg:col-span-1">
-                        <Link
-                            href="/khutba"
-                            className="h-full bg-emerald-900 rounded-3xl p-8 relative overflow-hidden group flex flex-col justify-center items-center text-center min-h-[250px] lg:min-h-[400px]"
-                        >
-                            {/* Icon */}
-                            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-6 backdrop-blur-sm">
-                                <Mic className="h-8 w-8 text-white" />
-                            </div>
-
-                            <h3 className="text-3xl font-bold text-white mb-4 font-serif">الخطب المنبرية</h3>
-                            <p className="text-gray-300 mb-8 leading-relaxed text-sm">
-                                استمع إلى خطب الجمعة والأعياد والمناسبات الدينية، مرتبة ومؤرشفة للرجوع إليها في أي وقت.
-                            </p>
-
-                            <span className="inline-flex items-center gap-2 text-sm font-bold bg-yellow-500 text-white px-6 py-3 rounded-xl hover:bg-yellow-600 transition-colors shadow-sm w-full justify-center">
-                                استمع الآن
-                                <ArrowLeft className="h-4 w-4" />
-                            </span>
-                        </Link>
-                    </div>
-
-                    {/* Stacked Cards (2/3 width) - Placed SECOND to appear on Left in RTL */}
-                    <div className="lg:col-span-2 grid grid-cols-1 gap-6">
-
-                        {/* Top Row: Dars (Full Width) */}
-                        <Link
-                            href="/dars"
-                            className="group bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all flex items-center justify-between"
-                        >
-                            <div className="flex-1">
-                                <h3 className="text-lg font-bold text-foreground mb-2 font-serif text-right">الدروس العلمية</h3>
-                                <p className="text-sm text-muted-foreground text-right">سلاسل علمية متكاملة في الفقه والعقيدة والسيرة.</p>
-                            </div>
-                            <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 rounded-full flex items-center justify-center mr-4">
-                                <GraduationCap className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                            </div>
-                        </Link>
-
-                        {/* Middle Row: Articles (Full Width) */}
-                        <Link
-                            href="/articles"
-                            className="group bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all flex items-center justify-between"
-                        >
-                            <div className="flex-1">
-                                <h3 className="text-lg font-bold text-foreground mb-2 font-serif text-right">المقالات والبحوث</h3>
-                                <p className="text-sm text-muted-foreground text-right">كتابات دورية تناقش القضايا المعاصرة برؤية شرعية.</p>
-                            </div>
-                            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mr-4">
-                                <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                            </div>
-                        </Link>
-
-                        {/* Bottom Row: 2 Columns (Videos & Books) */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Videos */}
+                {/* Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {sections.map((section) => {
+                        const Icon = section.icon
+                        return (
                             <Link
-                                href="/videos"
-                                className="group bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all flex items-center justify-between"
+                                key={section.href}
+                                href={section.href}
+                                className="group relative flex flex-col bg-card rounded-2xl p-6 border border-border shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
                             >
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-foreground mb-2 font-serif text-right">المرئيات</h3>
-                                    <p className="text-sm text-muted-foreground text-right">مقاطع مرئية قصيرة.</p>
-                                </div>
-                                <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mr-4 shrink-0">
-                                    <MonitorPlay className="h-6 w-6 text-red-600 dark:text-red-400" />
-                                </div>
+                                <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-primary via-secondary to-transparent scale-x-0 group-hover:scale-x-100 origin-right transition-transform duration-500" />
+
+                                <span className="w-12 h-12 rounded-xl bg-muted border border-border flex items-center justify-center text-primary mb-5 transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
+                                    <Icon className="h-6 w-6" />
+                                </span>
+
+                                <h3 className="text-xl font-bold font-serif text-card-foreground mb-2 group-hover:text-primary transition-colors">
+                                    {section.title}
+                                </h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+                                    {section.description}
+                                </p>
+
+                                <span className="mt-auto inline-flex items-center gap-2 text-xs font-bold text-primary">
+                                    تصفح القسم
+                                    <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                                </span>
                             </Link>
-
-                            {/* Books */}
-                            <Link
-                                href="/books"
-                                className="group bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all flex items-center justify-between"
-                            >
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-foreground mb-2 font-serif text-right">المكتبة المقروءة</h3>
-                                    <p className="text-sm text-muted-foreground text-right">مؤلفات الشيخ وكتب.</p>
-                                </div>
-                                <div className="w-12 h-12 bg-green-50 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-4 shrink-0">
-                                    <BookOpen className="h-6 w-6 text-green-600 dark:text-green-400" />
-                                </div>
-                            </Link>
-                        </div>
-
-                    </div>
-
+                        )
+                    })}
                 </div>
             </div>
         </section>

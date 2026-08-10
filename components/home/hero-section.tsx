@@ -96,9 +96,7 @@ export async function HeroSection({ data }: HeroSectionProps) {
   const hadithText = heroData.hadith_text?.trim() || ""
 
   return (
-    <header className="relative overflow-hidden py-16 lg:py-24 bg-background">
-      {/* Smooth gradient blend overlay */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 from-surface via-background/30 to-transparent pointer-events-none" />
+    <header className="relative overflow-hidden py-16 lg:py-24 border-b border-border/60">
 
       {heroData.notice_active && heroData.notice_text && (
         <div className="bg-secondary/10 dark:bg-secondary/20 border-b border-secondary/20 absolute top-0 left-0 right-0 z-20 overflow-hidden h-10 md:h-12 flex items-center" dir="ltr">

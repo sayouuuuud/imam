@@ -2,9 +2,8 @@
 
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
-import { stripHtml } from "@/lib/utils/strip-html"
 import { BookCoverImage } from "@/components/book-cover-image"
-import { ArrowLeft, Download, Eye } from "lucide-react"
+import { ArrowLeft, Download, Eye, PenLine } from "lucide-react"
 
 interface Book {
   id: string
@@ -20,109 +19,119 @@ interface FeaturedBooksProps {
   books: Book[]
 }
 
-// Book cover colors for visual variety - using CSS variables
-const bookColors = [
-  { bg: "bg-card", border: "border-l-border" },
-  { bg: "bg-muted", border: "border-l-border" },
-  { bg: "bg-accent", border: "border-l-accent" },
-  { bg: "bg-surface", border: "border-l-border" },
-]
-
 export function FeaturedBooks({ books }: FeaturedBooksProps) {
-
   const handleDownload = async (bookId: string, currentCount: number) => {
     const supabase = createClient()
     await supabase
       .from("books")
-      .update({ download_count: currentCount + 1 })
+      .update({ download_count: (currentCount || 0) + 1 })
       .eq("id", bookId)
   }
 
-  const getExcerpt = (description: string | null, maxLength = 100) => {
-    if (!description) {
-      return ""
-    }
-
-    const plainText = stripHtml(description)
-    if (plainText.length <= maxLength) {
-      return plainText
-    }
-    return plainText.substring(0, maxLength) + "..."
-  }
-  return (<section className="py-16 bg-surface relative">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      {/* Header */} <div className="flex justify-between items-end mb-12">
-        <div>
-          <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full mb-3 inline-block">
-            المكتبة العلمية </span>
-          <h2 className="text-4xl font-bold font-serif text-foreground">
-            أحدث المؤلفات</h2>
-        </div>
-
-        <Link href="/books" className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-primary bg-card px-4 py-2 rounded-lg text-sm border border-border transition-all duration-300 hover:shadow-md" >
-          عرض كل المؤلفات <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
-        </Link>
-
-      </div>
-
-      {/* Books Grid */} {books.length === 0 ? (<p className="text-gray-600 dark:text-gray-400 text-center py-12">
-        لا توجد كتب حالياً</p>
-
-      ) : (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {books.map((book, index) => {
-          const colors = bookColors[index % bookColors.length]
-          return (<div key={book.id}
-            className="group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl h-full flex flex-col">
-            {/* Book Cover - Clickable to detail page */} <Link href={`/books/${book.id}`}>
-              <div className="relative bg-muted p-6 rounded-t-2xl flex justify-center items-center h-64 transition-all duration-300 group-hover:bg-accent cursor-pointer">
-                {book.cover_image_path ? (<BookCoverImage coverImagePath={book.cover_image_path}
-                  title={book.title}
-                  variant="admin" className="w-32 h-48 shadow-2xl" />
-                ) : (<div className={`w-32 h-48 ${colors.bg} shadow-2xl relative rounded-sm flex flex-col items-center justify-center text-center p-4 border-l-4 ${colors.border}`} >
-                  <div className="border border-secondary absolute inset-2 opacity-50">
-                  </div>
-                  <span className="text-[8px] text-primary mb-4">
-                    كتاب</span>
-                  <h4 className="text-card-foreground font-serif text-xl mb-1">
-                    {book.title}</h4>
-                  <span className="text-[8px] text-gray-500 dark:text-gray-400">
-                    {book.author}</span>
-                </div>
-
-                )} </div>
-            </Link>
-
-            {/* Book Info */} <div className="bg-muted p-6 rounded-b-2xl border-t border-border flex-1 flex flex-col">
-              <Link href={`/books/${book.id}`}>
-                <h3 className="font-bold text-lg mb-2 text-card-foreground group-hover:text-primary transition cursor-pointer">
-                  {book.title} </h3>
-              </Link>
-
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                {book.author} </p>
-              <div className="flex items-center justify-between mt-auto pt-4">
-                {book.pdf_file_path ? (<a href={`/api/books/${book.id}/pdf?download=1`} download onClick={() =>
-                  handleDownload(book.id, book.download_count)}
-                  className="text-primary text-sm flex items-center gap-1 font-medium hover:underline transition-all duration-300" > <Download className="w-4 h-4" />
-
-                  تحميل </a>
-
-                ) : (<Link href={`/books/${book.id}`}
-                  className="text-primary text-sm flex items-center gap-1 font-medium hover:underline transition-all duration-300" >
-                  <Eye className="w-4 h-4" />
-
-                  عرض </Link>
-
-                )} </div>
-            </div>
-
+  return (
+    <section className="py-16 lg:py-20 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header */}
+        <div className="flex flex-wrap justify-between items-end gap-4 mb-10">
+          <div>
+            <span className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full mb-3 inline-block">
+              المكتبة العلمية
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold font-serif text-foreground leading-tight">أحدث المؤلفات</h2>
           </div>
 
-          )
-        })} </div>
+          <Link
+            href="/books"
+            className="flex items-center gap-2 text-muted-foreground hover:text-primary bg-card px-4 py-2 rounded-lg text-sm border border-border transition-all duration-300 hover:border-primary/40 hover:shadow-md"
+          >
+            عرض كل المؤلفات
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </div>
 
-      )} </div>
-  </section>
+        {/* Books Grid */}
+        {books.length === 0 ? (
+          <p className="text-muted-foreground text-center py-16">لا توجد كتب حالياً</p>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
+            {books.map((book) => (
+              <article
+                key={book.id}
+                className="group flex flex-col bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40"
+              >
+                {/* Cover */}
+                <Link href={`/books/${book.id}`} className="block relative aspect-[3/4] overflow-hidden bg-muted">
+                  {/* Default cover shown when no image exists or it fails to load */}
+                  <img
+                    src="/default-book-cover.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  {book.cover_image_path && (
+                    <BookCoverImage
+                      coverImagePath={book.cover_image_path}
+                      title={book.title}
+                      variant="detail"
+                      showFallback={false}
+                      className="absolute inset-0 h-full rounded-none shadow-none"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/10 to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
+                  <span className="absolute bottom-3 right-3 left-3 text-background text-xs font-bold line-clamp-2 leading-snug drop-shadow">
+                    {book.title}
+                  </span>
+                </Link>
 
+                {/* Info */}
+                <div className="flex flex-col flex-1 p-4 lg:p-5">
+                  <Link href={`/books/${book.id}`}>
+                    <h3 className="font-bold text-base lg:text-lg text-card-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug mb-2">
+                      {book.title}
+                    </h3>
+                  </Link>
+
+                  {book.author && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mb-4">
+                      <PenLine className="h-3.5 w-3.5 shrink-0" />
+                      <span className="line-clamp-1">{book.author}</span>
+                    </p>
+                  )}
+
+                  <div className="mt-auto pt-3 border-t border-border/60 flex items-center gap-2">
+                    {book.pdf_file_path ? (
+                      <a
+                        href={`/api/books/${book.id}/pdf?download=1`}
+                        download
+                        onClick={() => handleDownload(book.id, book.download_count)}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 bg-primary text-primary-foreground text-xs font-bold px-3 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        تحميل
+                      </a>
+                    ) : (
+                      <Link
+                        href={`/books/${book.id}`}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 bg-primary text-primary-foreground text-xs font-bold px-3 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        عرض
+                      </Link>
+                    )}
+                    <Link
+                      href={`/books/${book.id}`}
+                      aria-label={`تفاصيل كتاب ${book.title}`}
+                      className="w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
