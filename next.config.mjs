@@ -17,6 +17,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.public.blob.vercel-storage.com' },
       { protocol: 'https', hostname: 'i.ytimg.com' },
       { protocol: 'https', hostname: 'img.youtube.com' },
+      { protocol: 'https', hostname: 'f005.backblazeb2.com' },
     ],
   },
   output: 'standalone',
@@ -41,6 +42,16 @@ const nextConfig = {
         source: '/:file(sitemap.xml|robots.txt)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        // Cover images, thumbnails, and audio proxied through /api/download
+        // are immutable once uploaded — let browsers and the CDN cache them
+        // for a year instead of re-fetching (and hitting Supabase/B2) on
+        // every request, including Googlebot's.
+        source: '/api/download',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
     ]
