@@ -15,6 +15,7 @@ import { StatisticsSection } from "@/about/statistics"
 import { MissionVisionSection } from "@/components/about/mission-vision-section"
 import { JourneyTimeline } from "@/components/about/journey-timeline"
 import { SheikhQuotesSection } from "@/components/about/sheikh-quotes-section"
+import { ImageWithFallback } from "@/components/ui/image-with-fallback"
 
 export const revalidate = 0
 
@@ -245,16 +246,11 @@ export default async function AboutPage() {
 
                 {/* Main Image */}
                 <div className="relative w-72 h-80 sm:w-80 sm:h-96 md:w-96 md:h-[450px] lg:w-[420px] lg:h-[520px] rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-900/30">
-                  <img
+                  <ImageWithFallback
                     src={about.sheikh_photo?.startsWith('http') ? about.sheikh_photo : "/placeholder.svg"}
                     alt={about.sheikh_name}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement
-                      if (target.src !== window.location.origin + '/placeholder.svg') {
-                        target.src = '/placeholder.svg'
-                      }
-                    }}
+                    showLoading={false}
                   />
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a2018]/70 via-transparent to-transparent" />
