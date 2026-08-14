@@ -8,6 +8,20 @@ interface Sermon {
     title: string
     description?: string
     created_at: string
+    thumbnail_path?: string | null
+    thumbnail?: string | null
+}
+
+// الصور مخزنة على Cloudinary / UploadThing كروابط كاملة
+function getSermonThumbnail(sermon: Sermon): string | null {
+    const raw = sermon.thumbnail_path || sermon.thumbnail
+    if (!raw) return null
+    const value = raw.trim()
+    if (!value) return null
+    if (value.startsWith("http://") || value.startsWith("https://")) return value
+    // مسارات B2 القديمة تُقدَّم عبر مسار التحميل
+    if (value.startsWith("uploads/")) return `/api/download?key=${encodeURIComponent(value)}`
+    return null
 }
 
 interface LatestSermonsProps {
@@ -56,15 +70,29 @@ export function LatestSermons({ sermons }: LatestSermonsProps) {
                     <p className="text-muted-foreground text-center py-16">لا توجد خطب حالياً</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
-                        {sermons.map((sermon) => (
+                        {sermons.map((sermon) => {
+                            const thumbnail = getSermonThumbnail(sermon)
+
+                            return (
                             <Link href={`/khutba/${sermon.id}`} key={sermon.id} className="group block h-full">
                                 <article className="flex flex-col h-full bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40">
-                                    {/* Header */}
+                                    {/* Header — نفس الشكل والأبعاد سواء فيه صورة أو لا */}
                                     <div className="aspect-[16/10] bg-primary relative overflow-hidden flex items-center justify-center">
-                                        <Mic className="absolute -left-4 -bottom-6 h-28 w-28 text-primary-foreground/10 rotate-12" strokeWidth={1.2} />
-                                        <div className="relative w-16 h-16 rounded-full bg-secondary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
-                                            <Mic className="h-7 w-7 text-secondary-foreground" strokeWidth={1.6} />
-                                        </div>
+                                        {thumbnail ? (
+                                            <img
+                                                src={thumbnail || "/placeholder.svg"}
+                                                alt={sermon.title}
+                                                loading="lazy"
+                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <>
+                                                <Mic className="absolute -left-4 -bottom-6 h-28 w-28 text-primary-foreground/10 rotate-12" strokeWidth={1.2} />
+                                                <div className="relative w-16 h-16 rounded-full bg-secondary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
+                                                    <Mic className="h-7 w-7 text-secondary-foreground" strokeWidth={1.6} />
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
 
                                     {/* Content */}
@@ -89,7 +117,8 @@ export function LatestSermons({ sermons }: LatestSermonsProps) {
                                     </div>
                                 </article>
                             </Link>
-                        ))}
+                            )
+                        })}
                     </div>
                 )}
             </div>
