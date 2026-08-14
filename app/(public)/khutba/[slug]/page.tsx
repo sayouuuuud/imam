@@ -48,7 +48,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // Check if slug is a UUID
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
-    const query = supabase.from("sermons").select("title, description")
+    // IMPORTANT: thumbnail_path (and slug) must be selected here, otherwise
+    // getSermonOgImage() never sees an image and falls back to the default one.
+    const query = supabase.from("sermons").select("title, description, thumbnail_path, slug")
     if (isUuid) {
         query.eq("id", slug)
     } else {
@@ -73,7 +75,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         openGraph: {
             title: sermon.title,
             description: sermon.description ? sermon.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined,
-            images: [ogImage],
+            // secureUrl مهم لواتساب/فيسبوك حتى يعرضوا الصورة عبر https
+            images: [{ ...ogImage, secureUrl: ogImage.url }],
             type: "article",
             url: canonicalPath,
         },
