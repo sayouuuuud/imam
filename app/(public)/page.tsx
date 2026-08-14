@@ -30,7 +30,7 @@ const getHomePageData = unstable_cache(
         .limit(4),
       supabase
         .from("sermons")
-        .select("id, title, description, created_at")
+        .select("id, title, description, created_at, thumbnail_path")
         .eq("publish_status", "published")
         .order("created_at", { ascending: false })
         .limit(4),
