@@ -1,16 +1,15 @@
 import { MetadataRoute } from "next"
 import { createPublicClient } from "@/lib/supabase/public"
+import { buildSiteUrl } from "@/lib/utils/site-url"
 
 // Refresh the sitemap every hour so new content shows up quickly.
 // (Was 86400 / 24h which made indexing slow for fresh content.)
 export const revalidate = 3600
 
-// Use one canonical host everywhere. Without this, we end up mixing
-// `www.elsayedmourad.com` and `elsayedmourad.com` between the
-// sitemap, robots.txt, and JSON-LD, which Google treats as duplicate hosts.
-const CANONICAL_BASE_URL =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "https://elsayedmourad.com"
+// All URLs are built through buildSiteUrl() so there is exactly one canonical
+// host. Reading NEXT_PUBLIC_SITE_URL directly here is what produced 1173
+// "invalid URL" errors in Search Console: the env var held a markdown link and
+// `.replace(/\/$/, "")` passed it straight into every <loc>.
 
 // Supabase caps un-limited selects at 1000 rows. `media` alone is already 510
 // rows and growing, so every query below asks for an explicit ceiling instead
@@ -24,9 +23,7 @@ const MAX_ROWS_PER_TABLE = 5000
 const STATIC_PAGE_LAST_MODIFIED = new Date("2025-01-01T00:00:00.000Z")
 
 function buildUrl(path: string): string {
-    if (!path) return CANONICAL_BASE_URL
-    const cleanPath = path.startsWith("/") ? path : `/${path}`
-    return `${CANONICAL_BASE_URL}${cleanPath}`
+    return buildSiteUrl(path)
 }
 
 function safeDate(...candidates: Array<string | null | undefined>): Date | undefined {

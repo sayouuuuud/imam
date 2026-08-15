@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createPublicClient } from "@/lib/supabase/public"
 import { randomBytes } from "crypto"
+import { getSiteBaseUrl } from "@/lib/utils/site-url"
 
 /**
  * IndexNow integration.
@@ -24,10 +25,6 @@ function getHost(siteUrl: string): string {
     } catch {
         return siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
     }
-}
-
-function normalizeBaseUrl(url: string): string {
-    return url.replace(/\/$/, "")
 }
 
 async function getOrCreateIndexNowKey(): Promise<string> {
@@ -76,9 +73,7 @@ export async function POST(request: Request) {
             )
         }
 
-        const baseUrl = normalizeBaseUrl(
-            process.env.NEXT_PUBLIC_SITE_URL || "https://elsayedmourad.com"
-        )
+        const baseUrl = getSiteBaseUrl()
         const host = getHost(baseUrl)
         const key = await getOrCreateIndexNowKey()
         const keyLocation = `${baseUrl}/api/indexnow/key`
@@ -163,9 +158,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
     // Helpful diagnostic endpoint — returns config + key location
-    const baseUrl = normalizeBaseUrl(
-        process.env.NEXT_PUBLIC_SITE_URL || "https://elsayedmourad.com"
-    )
+    const baseUrl = getSiteBaseUrl()
     const key = await getOrCreateIndexNowKey()
     return NextResponse.json({
         endpoint: INDEXNOW_ENDPOINT,

@@ -14,6 +14,7 @@ import { AnalyticsTracker } from "@/components/analytics-tracker"
 import { JsonLd } from "@/components/json-ld"
 import { generateWebsiteSchema, generatePersonSchema } from "@/lib/schema-generator"
 import { getSiteSettings } from "@/lib/site-settings"
+import { getSiteBaseUrl, sanitizeBaseUrl } from "@/lib/utils/site-url"
 
 const amiri = Amiri({
   subsets: ["arabic", "latin"],
@@ -79,17 +80,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const googleVerification = settings.google_verification || "t3yRqEKg6tGfcJWSeOMPcIisJSkYbIlsVkUF7zrpzdI"
   const bingVerification = settings.bing_verification || undefined
 
-  // Canonical URL from admin — normalized (no trailing slash) and guarded
-  // against broken values so we don't blow up `new URL()`.
-  const rawCanonical = settings.canonical_url || "https://elsayedmourad.com"
-  const canonicalUrl = (() => {
-    try {
-      const u = new URL(rawCanonical)
-      return `${u.protocol}//${u.host}`
-    } catch {
-      return "https://elsayedmourad.com"
-    }
-  })()
+  // Canonical URL from admin — sanitized through one shared helper so a broken
+  // value (e.g. a pasted markdown link) can't leak into metadataBase, and so
+  // the host always matches the sitemap/robots host exactly.
+  const canonicalUrl = sanitizeBaseUrl(settings.canonical_url) || getSiteBaseUrl()
 
   // Use the production domain
   const baseUrl = new URL(canonicalUrl)

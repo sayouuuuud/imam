@@ -7,13 +7,13 @@
  * Failures are swallowed on purpose — SEO submission must never block the
  * admin flow or surface errors to the editor.
  */
+import { getSiteBaseUrl } from "@/lib/utils/site-url"
+
 export async function submitUrlsToIndexNow(paths: string[]): Promise<void> {
   if (!paths || paths.length === 0) return
   try {
     const origin =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "")
+      typeof window !== "undefined" ? window.location.origin : getSiteBaseUrl()
 
     const urls = paths.map((p) => {
       if (p.startsWith("http")) return p

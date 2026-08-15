@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { unstable_cache } from "next/cache"
 import { createPublicClient } from "@/lib/supabase/public"
 import { getSiteSettings } from "@/lib/site-settings"
+import { getSiteBaseUrl, sanitizeBaseUrl } from "@/lib/utils/site-url"
 
 /**
  * Row shape expected in `seo_settings` (per-page overrides managed in
@@ -82,17 +83,12 @@ export async function buildPageMetadata(
   const [site, pages] = await Promise.all([getSiteSettings(), getAllPageSEO()])
   const pageRow = pages.find((p) => normalizePath(p.page_path) === normalized)
 
-  // Resolve canonical base URL (same algorithm as root layout, kept local to
-  // avoid a circular import).
-  const rawCanonical =
-    pageRow?.canonical_url || site.canonical_url || "https://elsayedmourad.com"
-  let canonicalBase: string
-  try {
-    const u = new URL(rawCanonical)
-    canonicalBase = `${u.protocol}//${u.host}`
-  } catch {
-    canonicalBase = "https://elsayedmourad.com"
-  }
+  // Resolve canonical base URL through the shared sanitizer so per-page
+  // canonicals always use the exact same host as the sitemap and robots.txt.
+  const canonicalBase =
+    sanitizeBaseUrl(pageRow?.canonical_url) ||
+    sanitizeBaseUrl(site.canonical_url) ||
+    getSiteBaseUrl()
 
   const canonicalUrl = normalized === "/" ? canonicalBase : `${canonicalBase}${normalized}`
 

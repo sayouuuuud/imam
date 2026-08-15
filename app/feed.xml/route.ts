@@ -1,12 +1,12 @@
 import { createPublicClient } from "@/lib/supabase/public"
+import { getSiteBaseUrl } from "@/lib/utils/site-url"
 
 // Refresh the feed once an hour. RSS readers poll periodically so this is
 // a reasonable sweet spot between freshness and cache hit rate.
 export const revalidate = 3600
 
-const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://elsayedmourad.com"
-).replace(/\/$/, "")
+// كل روابط الـ RSS تُبنى من هذه القيمة، فالقيمة الفاسدة كانت تُفسد الخلاصة كلها
+const SITE_URL = getSiteBaseUrl()
 
 function escapeXml(str: string): string {
   if (!str) return ""

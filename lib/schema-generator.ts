@@ -1,8 +1,15 @@
 import { getSiteSettings } from "./site-settings"
+import { getSiteBaseUrl, sanitizeBaseUrl } from "./utils/site-url"
 
 export type SchemaType = Record<string, unknown>
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://elsayedmourad.com"
+const SITE_URL = getSiteBaseUrl()
+
+// `canonical_url` يأتي من إعدادات لوحة التحكم، ويمكن أن يُلصق فيه رابط ماركداون
+// بنفس الطريقة التي أفسدت متغيّر البيئة — لذلك نتحقق منه قبل استخدامه في JSON-LD
+function safeCanonicalUrl(value: string | undefined): string {
+    return sanitizeBaseUrl(value) || SITE_URL
+}
 
 // Helper function to get common author data from settings
 async function getAuthorData() {
@@ -13,11 +20,11 @@ async function getAuthorData() {
     // made the Person's name literally read "website of the sheikh" — Google
     // then cannot match the entity to a real person for a Knowledge Panel.
     name: settings.site_author || "الشيخ السيد مراد سلامة",
-        url: settings.canonical_url || SITE_URL,
+        url: safeCanonicalUrl(settings.canonical_url),
         image: settings.og_image || `${SITE_URL}/logo.png`,
         description: settings.meta_description || settings.site_description || "الشيخ السيد مراد عالم أزهري، إمام وخطيب، متخصص في الفقه والعقيدة والسيرة النبوية. يقدم خطبًا ودروسًا ومحاضرات علمية.",
         socials: [
-            settings.canonical_url || SITE_URL,
+            safeCanonicalUrl(settings.canonical_url),
             // we can add other specific ones if we add them to site_settings table later
         ]
     }

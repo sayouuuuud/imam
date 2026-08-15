@@ -1,10 +1,11 @@
 import { MetadataRoute } from "next"
 import { getSiteSettings } from "@/lib/site-settings"
+import { getSiteBaseUrl } from "@/lib/utils/site-url"
 
-// Keep the same canonical host used by the sitemap & JSON-LD.
-const CANONICAL_BASE_URL =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "https://elsayedmourad.com"
+// Keep the same canonical host used by the sitemap & JSON-LD. The raw env var
+// was leaking a markdown link into both `Host:` and `Sitemap:` in robots.txt,
+// which made Google unable to resolve the sitemap at all.
+const CANONICAL_BASE_URL = getSiteBaseUrl()
 
 export const revalidate = 3600
 

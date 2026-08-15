@@ -2,9 +2,11 @@
  * مساعدات لإدارة صور المعاينة (Open Graph images)
  */
 
+import { getSiteBaseUrl } from "@/lib/utils/site-url"
 
 const DEFAULT_OG_IMAGE = "/og-default.jpg"
-const SITE_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://elsayedmourad.com"
+// كان يُقرأ من المتغيّر مباشرة، فكانت روابط og:image تحمل نفس القيمة الفاسدة
+const SITE_BASE_URL = getSiteBaseUrl()
 
 // الملفات المخزنة على B2 تُقدَّم عبر /api/download الذي يعمل بإعادة توجيه (redirect)،
 // وبعض زواحف المشاركة (واتساب/فيسبوك) لا تتبع إعادة التوجيه لصور المعاينة.

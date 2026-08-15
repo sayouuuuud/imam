@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
+import { getSiteBaseUrl } from "@/lib/utils/site-url"
 
 /**
  * The old implementation built an XML string in memory and threw it away.
@@ -32,9 +33,7 @@ export async function POST() {
 }
 
 export async function GET() {
-    const baseUrl =
-        process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-        "https://elsayedmourad.com"
+    const baseUrl = getSiteBaseUrl()
     return NextResponse.json({
         sitemap: `${baseUrl}/sitemap.xml`,
         robots: `${baseUrl}/robots.txt`,
